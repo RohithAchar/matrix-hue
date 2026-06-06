@@ -51,12 +51,38 @@ Examples:
 
 Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`
 
+### Starting work on an issue
+
+```bash
+# 1. Make sure you're on main and up to date
+git checkout main
+git pull origin main
+
+# 2. Create a new branch for your issue
+git checkout -b feat/02-session-identity
+```
+
+Never commit directly to `main`. Always create a new branch.
+
 ### Making changes
 
 1. **Read the issue file** thoroughly — it contains all acceptance criteria and what to build.
 2. **Read the TODO comments** in the relevant files. Every file in `client/` and `server/` has comments explaining what needs to be implemented.
 3. **Build vertically through all layers.** Even if the issue feels small, make sure it touches the database (if needed), API (if needed), UI, and tests.
 4. **Keep files focused.** Each file has a single responsibility. Add new components/hooks/utils when a new concern emerges rather than bloating existing files.
+
+### Committing changes
+
+```bash
+# Check what files changed
+git status
+
+# Stage specific files (avoid git add . unless you're sure)
+git add client/src/hooks/useSession.js client/src/components/NameModal.jsx
+
+# Commit with a descriptive message
+git commit -m "feat: add session creation endpoint and NameModal"
+```
 
 ### Commit messages
 
@@ -73,7 +99,37 @@ fix: correct tiebreaker ordering in friends leaderboard
 chore: add vitest config for server tests
 ```
 
-### Before submitting
+### Pushing to GitHub
+
+```bash
+# First push — sets up upstream tracking
+git push -u origin feat/02-session-identity
+
+# Subsequent pushes on the same branch (just)
+git push
+```
+
+After pushing, GitHub shows a URL to create a Pull Request. Open it.
+
+### Creating a Pull Request
+
+1. Go to https://github.com/RohithAchar/matrix-hue/pulls
+2. Click **New Pull Request**
+3. **Base:** `main` — **Compare:** your branch (e.g., `feat/02-session-identity`)
+4. **Title:** Short description of what you did
+5. **Body:** Summary of changes + `Closes #2` (replace with the issue number)
+6. Click **Create Pull Request**
+
+### Merging
+
+Once your PR is reviewed and approved, merge it on GitHub. Then pull the latest main:
+
+```bash
+git checkout main
+git pull origin main
+```
+
+### Before submitting a PR
 
 1. **Run the tests:**
    ```bash
