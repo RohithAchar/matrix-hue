@@ -1,0 +1,35 @@
+/*
+ * Global styles for MatrixHue
+ *
+ * TODO:
+ * - Dark theme base (black background, light text)
+ * - Import font (system sans-serif stack)
+ * - Global reset / normalize
+ * - CSS variables for colors (--bg-easy: #000, --bg-medium: #1a0a0a, --bg-hard: #2a0505)
+ * - Slider track / thumb base styles
+ * - Button base styles
+ * - Responsive container
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #000;
+  color: #eee;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
