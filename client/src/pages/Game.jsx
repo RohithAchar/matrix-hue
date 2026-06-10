@@ -268,7 +268,8 @@ export default function Game() {
     }
 
     const delta = cieDe2000(target.h, target.s, target.l, guess.h, guess.s, guess.l);
-    const score = scoreFromDelta(delta);
+    const hueDist = Math.min(Math.abs(target.h - guess.h), 360 - Math.abs(target.h - guess.h)) / 180;
+    const score = scoreFromDelta(delta, hueDist);
     const res = { target, guess: { ...guess }, delta, score };
     setResult(res);
     addRound(res);

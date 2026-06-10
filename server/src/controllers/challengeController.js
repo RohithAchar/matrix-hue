@@ -116,7 +116,8 @@ async function submitRound(req, res) {
     target.h, target.s, target.l,
     guessHsl.h, guessHsl.s, guessHsl.l
   );
-  const score = scoreFromDelta(delta);
+  const hueDist = Math.min(Math.abs(target.h - guessHsl.h), 360 - Math.abs(target.h - guessHsl.h)) / 180;
+  const score = scoreFromDelta(delta, hueDist);
 
   if (!entry) {
     challenge.playerScores.push({

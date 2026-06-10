@@ -31,4 +31,22 @@ describe('scoreFromDelta', () => {
     const s = scoreFromDelta(2.345);
     expect(s.toString()).toMatch(/^\d(\.\d)?$/);
   });
+
+  it('applies hue penalty when hueDistance > 0', () => {
+    const withoutHue = scoreFromDelta(30, 0);
+    const withHue = scoreFromDelta(30, 1);
+    expect(withHue).toBeLessThan(withoutHue);
+    expect(withoutHue).toBe(7);
+    expect(withHue).toBe(4);
+  });
+
+  it('applies proportional penalty for partial hue error', () => {
+    const halfHue = scoreFromDelta(30, 0.5);
+    expect(halfHue).toBe(5.5);
+  });
+
+  it('caps at 0 even with large hue penalty', () => {
+    expect(scoreFromDelta(100, 1)).toBe(0);
+    expect(scoreFromDelta(0, 1)).toBe(7);
+  });
 });

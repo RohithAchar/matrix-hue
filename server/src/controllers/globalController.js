@@ -77,7 +77,8 @@ async function submitRound(req, res) {
     target.h, target.s, target.l,
     guessHsl.h, guessHsl.s, guessHsl.l
   );
-  const score = scoreFromDelta(delta);
+  const hueDist = Math.min(Math.abs(target.h - guessHsl.h), 360 - Math.abs(target.h - guessHsl.h)) / 180;
+  const score = scoreFromDelta(delta, hueDist);
 
   let entry = session.playerScores.find((ps) => ps.sessionToken === sessionToken);
 
@@ -111,4 +112,47 @@ async function submitRound(req, res) {
   }
 }
 
-module.exports = { initGlobal, submitRound };
+async function getLeaderboard(req, res) {
+  const { difficulty, sessionToken } = req.query;
+
+  if (!difficulty || !['easy', 'medium', 'hard'].includes(difficulty)) {
+    return res.status(400).json({ error: 'difficulty must be easy, medium, or hard' });
+  }
+
+  const date = todayUTC();
+  const session = await GlobalSession.findOne({ date, difficulty });
+
+  if (!session) {
+    return res.json({ date, difficulty, entries: [], currentPlayerEntry: null });
+  }
+
+  const completed = session.playerScores
+    .filter((ps) => ps.finishedAt)
+    .sort((a, b) => {
+      const scoreDiff = b.totalScore - a.totalScore;
+      if (scoreDiff !== 0) return scoreDiff;
+      return new Date(a.finishedAt) - new Date(b.finishedAt);
+    })
+    .map((ps, i) => ({
+      rank: i + 1,
+      sessionToken: ps.sessionToken,
+      displayName: ps.displayName,
+      roundScores: ps.roundScores,
+      totalScore: ps.totalScore,
+      finishedAt: ps.finishedAt,
+    }));
+
+  const entries = completed.slice(0, 100);
+  let currentPlayerEntry = null;
+
+  if (sessionToken) {
+    const playerIndex = completed.findIndex((e) => e.sessionToken === sessionToken);
+    if (playerIndex >= 100) {
+      currentPlayerEntry = completed[playerIndex];
+    }
+  }
+
+  res.json({ date, difficulty, entries, currentPlayerEntry });
+}
+
+module.exports = { initGlobal, submitRound, getLeaderboard };

@@ -19,6 +19,7 @@ export default function App() {
             <Route path="/play/friends/:code" element={<Game />} />
             <Route path="/play/global" element={<Game />} />
             <Route path="/leaderboard/friends/:shareCode" element={<Leaderboard />} />
+            <Route path="/leaderboard/global/:difficulty/:date" element={<Leaderboard />} />
           </Routes>
         </div>
       </GameProvider>

@@ -133,3 +133,72 @@ describe('POST /api/global/round', () => {
     expect(res.body).toHaveProperty('error');
   });
 });
+
+describe('GET /api/global/leaderboard', () => {
+  it('returns 400 for missing difficulty', async () => {
+    const res = await request(app)
+      .get('/api/global/leaderboard')
+      .expect(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('returns 400 for invalid difficulty', async () => {
+    const res = await request(app)
+      .get('/api/global/leaderboard?difficulty=impossible')
+      .expect(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('returns sorted entries with rank', async () => {
+    const res = await request(app)
+      .get('/api/global/leaderboard?difficulty=medium')
+      .expect(200);
+
+    expect(res.body).toHaveProperty('entries');
+    expect(Array.isArray(res.body.entries)).toBe(true);
+    expect(res.body).toHaveProperty('difficulty', 'medium');
+
+    if (res.body.entries.length > 1) {
+      for (let i = 1; i < res.body.entries.length; i++) {
+        expect(res.body.entries[i].totalScore).toBeLessThanOrEqual(res.body.entries[i - 1].totalScore);
+      }
+    }
+
+    for (const entry of res.body.entries) {
+      expect(entry).toHaveProperty('sessionToken');
+      expect(entry).toHaveProperty('displayName');
+      expect(entry).toHaveProperty('roundScores');
+      expect(entry.roundScores).toHaveLength(5);
+      expect(entry).toHaveProperty('totalScore');
+      expect(entry).toHaveProperty('finishedAt');
+      expect(entry).toHaveProperty('rank');
+    }
+  });
+
+  it('returns currentPlayerEntry when sessionToken matches', async () => {
+    const initRes = await request(app)
+      .get(`/api/global/init?difficulty=easy&sessionToken=${sessionToken}`)
+      .expect(200);
+
+    for (let i = 0; i < 5; i++) {
+      const target = initRes.body.targets[i];
+      await request(app)
+        .post('/api/global/round')
+        .send({
+          sessionToken,
+          difficulty: 'easy',
+          roundIndex: i,
+          guessHsl: { h: target.h + 10, s: target.s, l: target.l },
+        })
+        .expect(200);
+    }
+
+    const res = await request(app)
+      .get(`/api/global/leaderboard?difficulty=easy&sessionToken=${sessionToken}`)
+      .expect(200);
+
+    const foundInEntries = res.body.entries.some((e) => e.sessionToken === sessionToken);
+    const foundInCurrent = res.body.currentPlayerEntry && res.body.currentPlayerEntry.sessionToken === sessionToken;
+    expect(foundInEntries || foundInCurrent).toBe(true);
+  });
+});
