@@ -53,12 +53,12 @@ Terminal 2:
 
 ## Acceptance Criteria
 
-- [ ] `npm run dev` from root starts both client and server via `concurrently`.
-- [ ] Client renders "Hello MatrixHue" at `http://localhost:5173`.
-- [ ] Server responds `200 OK` with JSON at `GET /api/health`.
-- [ ] Vite proxies `/api/*` requests to the Express server.
-- [ ] MongoDB connection is established on server start (no crash if DB is unavailable — returns 503).
-- [ ] Server logs "MongoDB connected" on successful connection.
+- [x] `npm run dev` from root starts both client and server via `concurrently`.
+- [x] Client renders "Hello MatrixHue" at `http://localhost:5173`.
+- [x] Server responds `200 OK` with JSON at `GET /api/health`.
+- [x] Vite proxies `/api/*` requests to the Express server.
+- [x] MongoDB connection is established on server start (no crash if DB is unavailable — returns 503).
+- [x] Server logs "MongoDB connected" on successful connection.
 
 ---
 
