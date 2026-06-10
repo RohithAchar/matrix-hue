@@ -21,6 +21,7 @@ export default function Home() {
   const { playClick } = useSound();
   const navigate = useNavigate();
   const bgRef = useRef(null);
+  const headerRef = useRef(null);
   const [showNameModal, setShowNameModal] = useState(false);
   const [pendingMode, setPendingMode] = useState(null);
   const [pendingChallenge, setPendingChallenge] = useState(null);
@@ -75,6 +76,15 @@ export default function Home() {
       ease: 'power2.inOut',
     });
   }, [difficulty]);
+
+  useEffect(() => {
+    if (headerRef.current) {
+      gsap.fromTo(headerRef.current,
+        { opacity: 0, y: -20 },
+        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+      );
+    }
+  }, []);
 
   function handleDifficultySelect(d) {
     playClick();
@@ -154,6 +164,10 @@ export default function Home() {
         </div>
       )}
       <div className="home-content">
+        <div className="home-header" ref={headerRef}>
+          <h1 className="home-title">MatrixHue</h1>
+          <p className="home-subtitle">Can you trust your eye? Watch a color, then rebuild it hue by hue.</p>
+        </div>
         <DifficultySelector selected={difficulty} onSelect={handleDifficultySelect} />
 
         <div className="mode-cards">

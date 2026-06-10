@@ -5,9 +5,9 @@ import { ServiceUnavailableProvider, useServiceUnavailable } from './context/Ser
 import Home from './pages/Home';
 import Game from './pages/Game';
 import Leaderboard from './pages/Leaderboard';
-import SoundToggle from './components/SoundToggle';
 import GameErrorBoundary from './components/GameErrorBoundary';
 import ServiceUnavailable from './components/ServiceUnavailable';
+import NavBar from './components/NavBar';
 
 function AppContent() {
   const { isUnavailable, setUnavailable } = useServiceUnavailable();
@@ -18,7 +18,7 @@ function AppContent() {
 
   return (
     <div className="app">
-      <SoundToggle />
+      <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/play/single" element={<Game />} />

@@ -1,16 +1,3 @@
-/*
- * Global styles for MatrixHue
- *
- * TODO:
- * - Dark theme base (black background, light text)
- * - Import font (system sans-serif stack)
- * - Global reset / normalize
- * - CSS variables for colors (--bg-easy: #000, --bg-medium: #1a0a0a, --bg-hard: #2a0505)
- * - Slider track / thumb base styles
- * - Button base styles
- * - Responsive container
- */
-
 * {
   margin: 0;
   padding: 0;
@@ -37,6 +24,91 @@ body {
 .app {
   height: 100%;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NavBar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.navbar-logo {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  padding: 4px 0;
+  opacity: 0.9;
+}
+
+.navbar-logo:hover {
+  opacity: 1;
+}
+
+.navbar-title {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 500;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navbar-back {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #eee;
+}
+
+.sound-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sound-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eee;
 }
 
 .home {
@@ -46,6 +118,7 @@ body {
   align-items: center;
   justify-content: center;
   background-color: #000;
+  padding-top: 48px;
 }
 
 .home-content {
@@ -53,11 +126,39 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 48px;
+  padding: 40px 20px;
+  max-width: 100%;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.home-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.home-subtitle {
+  font-size: 15px;
+  color: #888;
+  max-width: 360px;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .difficulty-selector {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .pill {
@@ -69,6 +170,7 @@ body {
   font-size: 15px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .pill:hover {
@@ -101,6 +203,7 @@ body {
   color: #ccc;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mode-card:hover {
@@ -138,6 +241,7 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 20px;
 }
 
 .name-modal {
@@ -146,6 +250,7 @@ body {
   border-radius: 12px;
   padding: 32px;
   width: 320px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -274,6 +379,7 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
+  padding-top: 48px;
 }
 
 .swatch-wrapper {
@@ -302,6 +408,10 @@ body {
   gap: 32px;
   position: relative;
   z-index: 1;
+  padding: 20px;
+  max-width: 100%;
+  overflow-y: auto;
+  max-height: 100%;
 }
 
 .round-header {
@@ -350,6 +460,7 @@ body {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .game-btn:disabled {
@@ -367,6 +478,8 @@ body {
 .swatches {
   display: flex;
   gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .swatch-pair {
@@ -405,6 +518,16 @@ body {
   font-size: 14px;
 }
 
+.roast-text {
+  font-size: 15px;
+  color: #e55;
+  font-style: italic;
+  text-align: center;
+  max-width: 360px;
+  line-height: 1.4;
+  min-height: 42px;
+}
+
 .final-score {
   display: flex;
   flex-direction: column;
@@ -422,30 +545,34 @@ body {
   font-size: 64px;
   font-weight: 700;
   color: #fff;
+  word-break: break-word;
 }
 
 .round-breakdown {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 }
 
 .round-result-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   font-size: 14px;
   color: #ccc;
+  width: 100%;
 }
 
 .round-label {
-  width: 70px;
+  width: 60px;
   font-weight: 600;
   color: #888;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-size: 12px;
+  flex-shrink: 0;
 }
 
 .round-swatches {
@@ -459,6 +586,7 @@ body {
   height: 80px;
   border-radius: 8px;
   border: 1px solid #444;
+  flex-shrink: 0;
 }
 
 .round-vs {
@@ -470,36 +598,14 @@ body {
   font-weight: 600;
   color: #eee;
   font-variant-numeric: tabular-nums;
-  width: 70px;
+  width: 60px;
   text-align: right;
-}
-
-.sound-toggle {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 200;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid #444;
-  background: rgba(0, 0, 0, 0.6);
-  color: #eee;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s, background 0.2s;
-}
-.sound-toggle:hover {
-  border-color: #888;
-  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .pending-banner {
   position: fixed;
-  top: 0;
+  top: 48px;
   left: 0;
   right: 0;
   z-index: 150;
@@ -512,10 +618,13 @@ body {
   border-bottom: 1px solid #444;
   color: #eee;
   font-size: 14px;
+  flex-wrap: wrap;
 }
+
 .pending-banner.success {
   background: #0a2e1a;
 }
+
 .pending-banner button {
   padding: 6px 16px;
   border-radius: 6px;
@@ -525,9 +634,11 @@ body {
   cursor: pointer;
   font-size: 13px;
 }
+
 .pending-banner button:disabled {
   opacity: 0.5;
 }
+
 .pending-error {
   color: #e55;
   font-size: 13px;
@@ -539,15 +650,18 @@ body {
   align-items: center;
   gap: 24px;
 }
+
 .challenge-host h1 {
   font-size: 28px;
   font-weight: 600;
   color: #eee;
 }
+
 .challenge-subtitle {
   color: #888;
   font-size: 14px;
 }
+
 .share-code-box {
   display: flex;
   align-items: center;
@@ -557,6 +671,7 @@ body {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.03);
 }
+
 .share-code {
   font-size: 32px;
   font-weight: 700;
@@ -564,6 +679,7 @@ body {
   color: #fff;
   font-family: monospace;
 }
+
 .copy-btn {
   padding: 8px 20px;
   border-radius: 8px;
@@ -574,6 +690,7 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+
 .challenge-score {
   color: #888;
   font-size: 14px;
@@ -585,12 +702,14 @@ body {
   align-items: center;
   gap: 12px;
 }
+
 .global-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
 }
+
 .challenge-error {
   display: flex;
   flex-direction: column;
@@ -606,21 +725,25 @@ body {
   align-items: center;
   gap: 16px;
 }
+
 .join-challenge h2 {
   font-size: 20px;
   font-weight: 600;
   color: #eee;
 }
+
 .join-subtitle {
   color: #888;
   font-size: 14px;
 }
+
 .join-challenge form {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
 }
+
 .join-input {
   width: 200px;
   padding: 12px 16px;
@@ -636,15 +759,18 @@ body {
   outline: none;
   text-transform: uppercase;
 }
+
 .join-input:focus {
   border-color: #888;
 }
+
 .join-error {
   color: #e55;
   font-size: 14px;
   text-align: center;
   max-width: 300px;
 }
+
 .join-back {
   background: transparent;
   color: #888;
@@ -657,11 +783,13 @@ body {
   align-items: center;
   gap: 16px;
 }
+
 .friends-actions h2 {
   font-size: 20px;
   font-weight: 600;
   color: #eee;
 }
+
 .friends-buttons {
   display: flex;
   gap: 12px;
@@ -685,6 +813,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  text-align: center;
 }
 
 .lb-title {
@@ -699,6 +828,7 @@ body {
   gap: 2px;
   width: 100%;
   max-width: 800px;
+  overflow-x: auto;
 }
 
 .lb-row {
@@ -709,6 +839,7 @@ body {
   border-radius: 6px;
   font-size: 13px;
   color: #ccc;
+  min-width: 600px;
 }
 
 .lb-header-row {
@@ -829,11 +960,13 @@ body {
   color: #fff;
   font-size: 14px;
   border-top: 1px solid #8a2a2a;
+  flex-wrap: wrap;
 }
 
 .retry-banner-message {
   flex: 1;
   text-align: center;
+  min-width: 120px;
 }
 
 .retry-banner-actions {
@@ -921,4 +1054,386 @@ body {
   color: #888;
   font-size: 16px;
   font-style: italic;
+}
+
+/* Info Modal */
+.info-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+  padding: 20px;
+}
+
+.info-modal {
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 12px;
+  width: 480px;
+  max-width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.info-tabs {
+  display: flex;
+  border-bottom: 1px solid #333;
+}
+
+.info-tab {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.info-tab:hover {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.info-tab.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 2px solid #888;
+}
+
+.info-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.info-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #eee;
+  margin-bottom: 16px;
+}
+
+.info-content {
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.7;
+}
+
+.info-content p {
+  margin-bottom: 12px;
+}
+
+.info-content ol {
+  margin: 8px 0 16px 24px;
+}
+
+.info-content li {
+  margin-bottom: 8px;
+}
+
+.info-content strong {
+  color: #eee;
+}
+
+.info-scoring-table {
+  margin-top: 16px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.info-scoring-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.info-scoring-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.info-scoring-row span:last-child {
+  font-weight: 600;
+  color: #eee;
+  font-variant-numeric: tabular-nums;
+}
+
+.info-close {
+  margin: 0 24px 24px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #eee;
+  color: #111;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.navbar-info {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar-info:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eee;
+}
+
+/* === Mobile Breakpoints === */
+
+@media (max-width: 768px) {
+  .home-content {
+    gap: 32px;
+    padding: 24px 16px;
+  }
+
+  .home-title {
+    font-size: 28px;
+  }
+
+  .home-subtitle {
+    font-size: 14px;
+  }
+
+  .mode-cards {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .mode-card {
+    width: 260px;
+    padding: 24px 16px;
+  }
+
+  .mode-icon {
+    font-size: 30px;
+  }
+
+  .difficulty-selector {
+    gap: 8px;
+  }
+
+  .pill {
+    padding: 8px 20px;
+    font-size: 14px;
+  }
+
+  .game-content {
+    gap: 24px;
+    padding: 16px;
+  }
+
+  .hsl-slider-group {
+    gap: 20px;
+  }
+
+  .slider-track {
+    height: 160px;
+  }
+
+  .score-display {
+    font-size: 36px;
+  }
+
+  .score-out-of {
+    font-size: 18px;
+  }
+
+  .total-score {
+    font-size: 48px;
+  }
+
+  .final-score h1 {
+    font-size: 22px;
+  }
+
+  .round-result-row {
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  .mini-swatch {
+    width: 56px;
+    height: 56px;
+  }
+
+  .round-label {
+    width: 50px;
+    font-size: 11px;
+  }
+
+  .round-score {
+    width: 50px;
+  }
+
+  .friends-buttons {
+    flex-direction: column;
+  }
+
+  .share-code-box {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .share-code {
+    font-size: 24px;
+    letter-spacing: 4px;
+  }
+
+  .lb-title {
+    font-size: 22px;
+  }
+
+  .lb-row {
+    font-size: 12px;
+    padding: 8px 10px;
+    grid-template-columns: 30px 1fr repeat(5, 40px) 60px 60px;
+    min-width: 520px;
+  }
+
+  .pending-banner {
+    font-size: 13px;
+    padding: 10px 12px;
+    top: 48px;
+  }
+
+  .retry-banner {
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+
+  .name-modal {
+    padding: 24px;
+    width: 300px;
+  }
+
+  .swatches {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-title {
+    font-size: 24px;
+  }
+
+  .home-content {
+    gap: 24px;
+  }
+
+  .mode-card {
+    width: 220px;
+    padding: 20px 14px;
+  }
+
+  .pill {
+    padding: 6px 16px;
+    font-size: 13px;
+  }
+
+  .hsl-slider-group {
+    gap: 14px;
+  }
+
+  .slider-track {
+    height: 120px;
+  }
+
+  .slider-label {
+    font-size: 10px;
+  }
+
+  .slider-value {
+    font-size: 11px;
+  }
+
+  .score-display {
+    font-size: 28px;
+  }
+
+  .score-out-of {
+    font-size: 14px;
+  }
+
+  .total-score {
+    font-size: 36px;
+  }
+
+  .game-btn {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+
+  .mini-swatch {
+    width: 40px;
+    height: 40px;
+  }
+
+  .round-result-row {
+    font-size: 12px;
+  }
+
+  .share-code {
+    font-size: 20px;
+    letter-spacing: 3px;
+  }
+
+  .share-code-box {
+    padding: 10px 12px;
+  }
+
+  .navbar-logo {
+    font-size: 16px;
+  }
+
+  .join-input {
+    width: 180px;
+    font-size: 24px;
+    letter-spacing: 6px;
+  }
+
+  .lb-row {
+    grid-template-columns: 24px 1fr repeat(5, 32px) 50px 50px;
+    min-width: 440px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .roast-text {
+    font-size: 14px;
+  }
+
+  .lb-container {
+    padding: 24px 12px;
+  }
+
+  .pending-banner {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
 }
