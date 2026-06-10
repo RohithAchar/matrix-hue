@@ -12,6 +12,19 @@ export default function ChallengeHost({ shareCode, totalScore, onHome }) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function handleShare() {
+    playClick();
+    const url = window.location.origin;
+    const text = `Can you beat my score? Join my MatrixHue challenge! Code: ${shareCode}\nPlay at: ${url}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'MatrixHue Challenge', text, url }); } catch {}
+    } else {
+      navigator.clipboard.writeText(`${shareCode} — ${url}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
   return (
     <div className="challenge-host">
       <h1>Challenge Created!</h1>
@@ -20,6 +33,9 @@ export default function ChallengeHost({ shareCode, totalScore, onHome }) {
         <span className="share-code">{shareCode}</span>
         <button className="copy-btn" onClick={handleCopy}>
           {copied ? 'Copied!' : 'Copy'}
+        </button>
+        <button className="copy-btn" onClick={handleShare}>
+          Share
         </button>
       </div>
       <p className="challenge-score">Your score: {Math.round(totalScore * 10) / 10} / 50</p>

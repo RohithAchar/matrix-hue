@@ -317,6 +317,17 @@ export default function Game() {
     navigate('/');
   }
 
+  async function handleShareGlobal() {
+    playClick();
+    const url = window.location.origin;
+    const text = `Today's MatrixHue Global Challenge (${difficulty}) — can you top the leaderboard?\nPlay at: ${url}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'MatrixHue Global Challenge', text, url }); } catch {}
+    } else {
+      navigator.clipboard.writeText(text);
+    }
+  }
+
   async function handleSaveChallenge() {
     setSaving(true);
     setSaveError(null);
@@ -470,6 +481,7 @@ export default function Game() {
                 <button className="game-btn" onClick={() => { playClick(); navigate(`/leaderboard/global/${difficulty}/${globalDate}`); }}>
                   View Leaderboard
                 </button>
+                <button className="game-btn" onClick={() => { playClick(); handleShareGlobal(); }}>Share</button>
                 <button className="game-btn" onClick={() => { playClick(); handlePlayAgain(); }}>Play Again</button>
               </div>
             ) : (

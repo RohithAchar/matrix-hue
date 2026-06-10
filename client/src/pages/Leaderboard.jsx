@@ -83,6 +83,30 @@ export default function Leaderboard() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function handleShare() {
+    playClick();
+    const url = window.location.origin;
+    if (isGlobal) {
+      const text = `Today's MatrixHue Global Challenge (${routeDifficulty}) — can you top the leaderboard?\nPlay at: ${url}`;
+      if (navigator.share) {
+        try { await navigator.share({ title: 'MatrixHue Global Challenge', text, url }); } catch {}
+      } else {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } else {
+      const text = `Can you beat my score? Join my MatrixHue challenge! Code: ${shareCode}\nPlay at: ${url}`;
+      if (navigator.share) {
+        try { await navigator.share({ title: 'MatrixHue Challenge', text, url }); } catch {}
+      } else {
+        navigator.clipboard.writeText(`${shareCode} — ${url}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  }
+
   function formatDate(dateStr) {
     const d = new Date(dateStr);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -99,6 +123,9 @@ export default function Leaderboard() {
             <>
               <h1 className="lb-title">Today's Global Leaderboard</h1>
               <p className="lb-subtitle">{routeDifficulty} — {routeDate}</p>
+              <button className="copy-btn" onClick={handleShare}>
+                {copied ? 'Copied!' : 'Share'}
+              </button>
             </>
           ) : (
             <>
@@ -107,6 +134,9 @@ export default function Leaderboard() {
                 <span className="share-code">{shareCode}</span>
                 <button className="copy-btn" onClick={handleCopy}>
                   {copied ? 'Copied!' : 'Copy'}
+                </button>
+                <button className="copy-btn" onClick={handleShare}>
+                  Share
                 </button>
               </div>
               {data && <p className="challenge-subtitle">{data.difficulty} challenge</p>}
