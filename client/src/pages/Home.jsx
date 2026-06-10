@@ -30,11 +30,16 @@ export default function Home() {
   const [retryCode, setRetryCode] = useState(null);
   const [retryError, setRetryError] = useState(null);
   const [friendsAction, setFriendsAction] = useState(null);
+  const [recentRooms, setRecentRooms] = useState([]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('pendingChallenge');
       if (raw) setPendingChallenge(JSON.parse(raw));
+    } catch {}
+    try {
+      const stored = JSON.parse(localStorage.getItem('recentChallenges') || '[]');
+      setRecentRooms(stored);
     } catch {}
   }, []);
 
@@ -215,11 +220,21 @@ export default function Home() {
         )}
         {friendsAction === 'view-lb' && (
           <div className="join-challenge">
-            <h2>View Friends Leaderboard</h2>
-            <p className="join-subtitle">Enter the share code:</p>
+            <h2>Friends Leaderboard</h2>
+            <p className="join-subtitle">Select a room or enter a code:</p>
+            {recentRooms.length > 0 && (
+              <div className="recent-rooms">
+                {recentRooms.map((r) => (
+                  <button key={r.shareCode} className="room-btn" onClick={() => { playClick(); navigate(`/leaderboard/friends/${r.shareCode}`); }}>
+                    <span className="room-code">{r.shareCode}</span>
+                    <span className="room-diff">{r.difficulty}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             <form onSubmit={(e) => { e.preventDefault(); const code = e.target.code.value.trim().toUpperCase(); if (code) navigate(`/leaderboard/friends/${code}`); }}>
               <input className="join-input" name="code" maxLength={6} placeholder="CODE" autoComplete="off" />
-              <button className="game-btn" type="submit">View</button>
+              <button className="game-btn" type="submit" style={{ marginTop: 8 }}>View</button>
             </form>
             <button className="game-btn join-back" onClick={handleFriendsBack}>Back</button>
           </div>

@@ -94,6 +94,7 @@ export default function Game() {
           .then((data) => {
             selectDifficulty(data.difficulty);
             setTargets(data.targets);
+            saveRecentChallenge(guestCode, data.difficulty);
             startGame();
           })
           .catch(() => navigate('/'))
@@ -328,6 +329,17 @@ export default function Game() {
     }
   }
 
+  function saveRecentChallenge(code, diff) {
+    try {
+      const stored = JSON.parse(localStorage.getItem('recentChallenges') || '[]');
+      const idx = stored.findIndex(c => c.shareCode === code);
+      const entry = { shareCode: code, difficulty: diff, timestamp: Date.now() };
+      if (idx >= 0) stored[idx] = entry;
+      else stored.unshift(entry);
+      localStorage.setItem('recentChallenges', JSON.stringify(stored.slice(0, 20)));
+    } catch {}
+  }
+
   async function handleSaveChallenge() {
     setSaving(true);
     setSaveError(null);
@@ -350,6 +362,7 @@ export default function Game() {
       }
       const data = await res.json();
       setShareCode(data.shareCode);
+      saveRecentChallenge(data.shareCode, difficulty);
     } catch (err) {
       setSaveError(err.message);
       try {
