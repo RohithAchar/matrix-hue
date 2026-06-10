@@ -20,9 +20,7 @@ function getPageTitle(pathname, params) {
 
 export default function NavBar() {
   const { pathname } = useLocation();
-  const params = useParams();
   const navigate = useNavigate();
-  const title = getPageTitle(pathname, params);
   const isHome = pathname === '/';
   const [showInfo, setShowInfo] = useState(false);
 
@@ -32,19 +30,21 @@ export default function NavBar() {
         <button className="navbar-logo" onClick={() => navigate('/')}>
           MatrixHue
         </button>
-        {title && <span className="navbar-title">{title}</span>}
+        <div className="navbar-center">
+          <button className="navbar-lb-btn" onClick={() => navigate(`/leaderboard/global/easy/${TODAY}`)}>
+            Leaderboard
+          </button>
+          <span className="navbar-sep">|</span>
+          <button className="navbar-lb-btn" onClick={() => navigate('/rooms')}>
+            Rooms
+          </button>
+        </div>
         <div className="navbar-right">
           {!isHome && (
             <button className="navbar-back" onClick={() => navigate('/')}>
               Home
             </button>
           )}
-          <button className="navbar-lb-btn" onClick={() => navigate(`/leaderboard/global/easy/${TODAY}`)}>
-            Global
-          </button>
-          <button className="navbar-lb-btn" onClick={() => navigate('/rooms')}>
-            Friends
-          </button>
           <SoundToggle />
           <button className="navbar-info" onClick={() => setShowInfo(true)}>
             ?
