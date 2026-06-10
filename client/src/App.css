@@ -585,6 +585,12 @@ body {
   align-items: center;
   gap: 12px;
 }
+.global-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
 .challenge-error {
   display: flex;
   flex-direction: column;

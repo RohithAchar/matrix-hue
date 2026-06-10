@@ -34,6 +34,7 @@ export default function Game() {
   const routeTargets = location.state?.targets;
   const routeDifficulty = location.state?.difficulty;
   const isGuest = !!guestCode;
+  const isGlobal = mode === 'global' && !isGuest;
   const { playRoundStart, playTick, playFade, playScore, playClick } = useSound();
 
   const [targets, setTargets] = useState(routeTargets || []);
@@ -48,27 +49,33 @@ export default function Game() {
   const [guestError, setGuestError] = useState(null);
   const [guestSubmitting, setGuestSubmitting] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [globalDate, setGlobalDate] = useState(null);
 
   const { displayName, sessionToken } = useSession();
+  const [gameId, setGameId] = useState(0);
 
   const fadeRef = useRef(null);
   const recreateRef = useRef(null);
   const labelRef = useRef(null);
   const prevRemaining = useRef(0);
-  const initRef = useRef(false);
 
   const duration = DIFFICULTY_TIMES[difficulty] || 6;
 
-  const { remaining, start: startTimer, reset: resetTimer, pause: pauseTimer } = useTimer(duration, () => {
+  const { remaining, start: startTimer, pause: pauseTimer } = useTimer(duration, () => {
     setPhase('fade');
   });
 
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
+    setTargets([]);
+    setGuess(randomHsl());
+    setTouched(false);
+    setResult(null);
+    setCompleted(false);
+    setGlobalDate(null);
 
     if (isGuest) {
-      if (targets.length > 0) {
+      if (routeTargets) {
+        setTargets(routeTargets);
         if (routeDifficulty) selectDifficulty(routeDifficulty);
         startGame();
       } else if (guestCode) {
@@ -84,13 +91,28 @@ export default function Game() {
           })
           .catch(() => navigate('/'));
       }
+    } else if (isGlobal) {
+      if (!sessionToken) return;
+      const diff = difficulty || 'easy';
+      if (!difficulty) selectDifficulty('easy');
+      fetch(`/api/global/init?difficulty=${diff}&sessionToken=${sessionToken}`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to load global challenge');
+          return res.json();
+        })
+        .then((data) => {
+          setGlobalDate(data.date);
+          setTargets(data.targets);
+          startGame();
+        })
+        .catch(() => navigate('/'));
     } else {
       if (!difficulty) selectDifficulty('easy');
       const ts = generateTargets(difficulty || 'easy', 5);
       setTargets(ts);
       startGame();
     }
-  }, []);
+  }, [gameId, sessionToken]);
 
   useEffect(() => {
     if (targets.length === 0) return;
@@ -99,9 +121,8 @@ export default function Game() {
     setTouched(false);
     setResult(null);
     setPhase('memorize');
-    resetTimer();
     startTimer();
-  }, [round, targets, resetTimer, startTimer, setPhase]);
+  }, [round, targets, startTimer, setPhase]);
 
   useEffect(() => {
     if (phase === 'memorize') playRoundStart();
@@ -138,6 +159,8 @@ export default function Game() {
       navigate(`/leaderboard/friends/${guestCode}`, { replace: true });
     }
   }, [phase, isGuest, guestCode, navigate]);
+
+
 
   useEffect(() => {
     if (phase === 'recreate' && recreateRef.current) {
@@ -213,6 +236,37 @@ export default function Game() {
       return;
     }
 
+    if (isGlobal) {
+      setGuestSubmitting(true);
+      setGuestError(null);
+      try {
+        const res = await fetch('/api/global/round', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionToken,
+            difficulty,
+            roundIndex: round,
+            guessHsl: guess,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to submit guess');
+        const data = await res.json();
+        const delta = cieDe2000(data.targetColor.h, data.targetColor.s, data.targetColor.l, guess.h, guess.s, guess.l);
+        const roundResult = { target: data.targetColor, guess: { ...guess }, score: data.score, delta };
+        setResult(roundResult);
+        addRound(roundResult);
+        setPhase('reveal');
+      } catch (err) {
+        setGuestError(err.message);
+        setGuestSubmitting(false);
+        return;
+      } finally {
+        setGuestSubmitting(false);
+      }
+      return;
+    }
+
     const delta = cieDe2000(target.h, target.s, target.l, guess.h, guess.s, guess.l);
     const score = scoreFromDelta(delta);
     const res = { target, guess: { ...guess }, delta, score };
@@ -231,6 +285,10 @@ export default function Game() {
   }
 
   function handlePlayAgain() {
+    if (isGlobal) {
+      setGameId((id) => id + 1);
+      return;
+    }
     navigate('/');
   }
 
@@ -371,6 +429,13 @@ export default function Game() {
                     <button className="game-btn" onClick={handleSaveChallenge}>Retry</button>
                   </div>
                 )}
+              </div>
+            ) : isGlobal && globalDate ? (
+              <div className="global-actions">
+                <button className="game-btn" onClick={() => { playClick(); navigate(`/leaderboard/global/${difficulty}/${globalDate}`); }}>
+                  View Leaderboard
+                </button>
+                <button className="game-btn" onClick={() => { playClick(); handlePlayAgain(); }}>Play Again</button>
               </div>
             ) : (
               <button className="game-btn" onClick={() => { playClick(); handlePlayAgain(); }}>Play Again</button>

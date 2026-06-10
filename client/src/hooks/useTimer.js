@@ -17,10 +17,9 @@ export function useTimer(duration, onComplete) {
   }, []);
 
   const start = useCallback(() => {
-    clear();
     setRemaining(durationRef.current);
     setIsRunning(true);
-  }, [clear]);
+  }, []);
 
   const pause = useCallback(() => {
     clear();
