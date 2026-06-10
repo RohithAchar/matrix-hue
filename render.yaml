@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: matrix-hue
+    runtime: node
+    repo: https://github.com/RohithAchar/matrix-hue
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: MONGO_URI
+        sync: false
