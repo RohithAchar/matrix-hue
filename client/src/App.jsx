@@ -3,6 +3,7 @@ import { SessionProvider } from './hooks/useSession';
 import { GameProvider } from './context/GameContext';
 import { ServiceUnavailableProvider, useServiceUnavailable } from './context/ServiceUnavailableContext';
 import Home from './pages/Home';
+import Rooms from './pages/Rooms';
 import Game from './pages/Game';
 import Leaderboard from './pages/Leaderboard';
 import GameErrorBoundary from './components/GameErrorBoundary';
@@ -21,6 +22,7 @@ function AppContent() {
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/rooms" element={<Rooms />} />
         <Route path="/play/single" element={<Game />} />
         <Route path="/play/friends" element={<Game />} />
         <Route path="/play/friends/:code" element={<Game />} />

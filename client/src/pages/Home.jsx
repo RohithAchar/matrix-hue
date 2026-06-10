@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import DifficultySelector from '../components/DifficultySelector';
 import NameModal from '../components/NameModal';
@@ -20,7 +20,6 @@ export default function Home() {
   const { difficulty, mode, selectDifficulty, selectMode } = useGame();
   const { playClick } = useSound();
   const navigate = useNavigate();
-  const location = useLocation();
   const bgRef = useRef(null);
   const headerRef = useRef(null);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -30,25 +29,13 @@ export default function Home() {
   const [retryCode, setRetryCode] = useState(null);
   const [retryError, setRetryError] = useState(null);
   const [friendsAction, setFriendsAction] = useState(null);
-  const [recentRooms, setRecentRooms] = useState([]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('pendingChallenge');
       if (raw) setPendingChallenge(JSON.parse(raw));
     } catch {}
-    try {
-      const stored = JSON.parse(localStorage.getItem('recentChallenges') || '[]');
-      setRecentRooms(stored);
-    } catch {}
   }, []);
-
-  useEffect(() => {
-    if (location.state?.showFriendsLb) {
-      setFriendsAction('view-lb');
-      window.history.replaceState({}, '');
-    }
-  }, [location.state]);
 
   async function handleRetryChallenge() {
     if (!pendingChallenge) return;
@@ -213,27 +200,6 @@ export default function Home() {
         )}
         {friendsAction === 'join' && (
           <JoinChallenge onBack={handleFriendsBack} />
-        )}
-        {friendsAction === 'view-lb' && (
-          <div className="join-challenge">
-            <h2>Friends Leaderboard</h2>
-            {recentRooms.length > 0 ? (
-              <>
-                <p className="join-subtitle">Your rooms:</p>
-                <div className="recent-rooms">
-                  {recentRooms.map((r) => (
-                    <button key={r.shareCode} className="room-btn" onClick={() => { playClick(); navigate(`/leaderboard/friends/${r.shareCode}`); }}>
-                      <span className="room-code">{r.shareCode}</span>
-                      <span className="room-diff">{r.difficulty}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="join-subtitle">No rooms played yet. Start a friends challenge to see it here.</p>
-            )}
-            <button className="game-btn join-back" onClick={handleFriendsBack}>Back</button>
-          </div>
         )}
       </div>
 

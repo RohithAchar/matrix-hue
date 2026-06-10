@@ -7,6 +7,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 
 function getPageTitle(pathname, params) {
   if (pathname === '/') return null;
+  if (pathname === '/rooms') return 'Your Rooms';
   if (pathname.startsWith('/play/single')) return 'Single Player';
   if (pathname.startsWith('/play/friends')) {
     return params.code ? 'Friends Challenge' : 'Play with Friends';
@@ -41,7 +42,7 @@ export default function NavBar() {
           <button className="navbar-lb-btn" onClick={() => navigate(`/leaderboard/global/easy/${TODAY}`)}>
             Global
           </button>
-          <button className="navbar-lb-btn" onClick={() => navigate('/', { state: { showFriendsLb: true } })}>
+          <button className="navbar-lb-btn" onClick={() => navigate('/rooms')}>
             Friends
           </button>
           <SoundToggle />
