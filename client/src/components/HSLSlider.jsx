@@ -17,20 +17,25 @@ export default function HSLSlider({ label, value, min, max, unit, onChange, trac
     [min, max]
   );
 
+  function getClientY(e) {
+    return e.touches ? e.touches[0].clientY : e.clientY;
+  }
+
   function handleTrackClick(e) {
-    const v = valueFromEvent(e.clientY);
+    const v = valueFromEvent(getClientY(e));
     if (v !== value) onChange(v);
   }
 
-  function handleMouseDown(e) {
+  function startDrag(e) {
     e.preventDefault();
     dragging.current = true;
-    const v = valueFromEvent(e.clientY);
+    const v = valueFromEvent(getClientY(e));
     if (v !== value) onChange(v);
 
     function onMove(ev) {
       if (!dragging.current) return;
-      const v = valueFromEvent(ev.clientY);
+      ev.preventDefault();
+      const v = valueFromEvent(getClientY(ev));
       onChange(v);
     }
 
@@ -38,10 +43,14 @@ export default function HSLSlider({ label, value, min, max, unit, onChange, trac
       dragging.current = false;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
     }
 
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
   }
 
   function handleKeyDown(e) {
@@ -62,13 +71,15 @@ export default function HSLSlider({ label, value, min, max, unit, onChange, trac
           className="slider-track"
           ref={trackRef}
           onClick={handleTrackClick}
+          onTouchStart={handleTrackClick}
           style={{ background: trackColor }}
         >
           <div
             className="slider-thumb"
             ref={thumbRef}
             style={{ bottom: `${pct}%` }}
-            onMouseDown={handleMouseDown}
+            onMouseDown={startDrag}
+            onTouchStart={startDrag}
             tabIndex={0}
             role="slider"
             aria-label={label}
