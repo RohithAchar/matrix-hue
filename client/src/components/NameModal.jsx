@@ -1,27 +1,61 @@
-/*
- * NameModal.jsx — Display name entry modal
- *
- * Shown on first visit when player selects a mode+difficulty
- *
- * TODO:
- * - Centered overlay with dark backdrop
- * - Input field for display name (placeholder: "Enter your name")
- * - "Start" button that calls createSession from useSession hook
- * - GSAP entrance: fade in + scale up (0.3s, power2.out)
- * - Button disabled when input is empty
- * - Loading state on submit ("Creating...")
- * - Error state: inline message on network failure
- * - On success: close modal, start game navigation
- * - Sound: playClick on submit
- */
+import { useState, useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { useSession } from '../hooks/useSession';
 
-export default function NameModal({ onSubmit }) {
+export default function NameModal({ onSuccess }) {
+  const { createSession } = useSession();
+  const [name, setName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const overlayRef = useRef(null);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    gsap.fromTo(
+      overlayRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.15, ease: 'power2.out' }
+    );
+    gsap.fromTo(
+      modalRef.current,
+      { opacity: 0, scale: 0.9 },
+      { opacity: 1, scale: 1, duration: 0.3, ease: 'power2.out' }
+    );
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!name.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await createSession(name.trim());
+      onSuccess();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
-    <div className="name-modal-overlay">
-      <div className="name-modal">
+    <div className="name-modal-overlay" ref={overlayRef}>
+      <div className="name-modal" ref={modalRef}>
         <h2>Enter your name</h2>
-        <input placeholder="Enter your name" />
-        <button>Start</button>
+        <form onSubmit={handleSubmit}>
+          <input
+            placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={30}
+            autoFocus
+            disabled={submitting}
+          />
+          <button type="submit" disabled={!name.trim() || submitting}>
+            {submitting ? 'Creating...' : 'Start'}
+          </button>
+        </form>
+        {error && <p className="name-modal-error">{error}</p>}
       </div>
     </div>
   );

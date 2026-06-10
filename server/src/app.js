@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const app = express();
 
 let isConnected = false;
+let dbReadyResolve;
+const dbReady = new Promise((resolve) => { dbReadyResolve = resolve; });
 
 app.use(cors());
 app.use(express.json());
@@ -15,9 +17,11 @@ async function connectDB() {
     const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/matrixhue';
     await mongoose.connect(uri);
     isConnected = true;
+    dbReadyResolve();
     console.log('MongoDB connected');
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
+    dbReadyResolve();
     isConnected = false;
   }
 }
@@ -49,8 +53,12 @@ app.use('/api/challenges', require('./routes/challenges'));
 app.use('/api/global', require('./routes/global'));
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
 
 module.exports = app;
+module.exports.dbReady = dbReady;

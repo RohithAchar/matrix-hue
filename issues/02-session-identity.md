@@ -82,12 +82,12 @@ localStorage.getItem("displayName")   // "Neo"
 
 ## Acceptance Criteria
 
-- [ ] `POST /api/session` creates a new `Player` document and returns `{ sessionToken, displayName }`.
-- [ ] `POST /api/session` returns `400` for invalid/missing display names.
-- [ ] `NameModal` renders with GSAP entrance animation.
-- [ ] On submit, `useSession` calls the API and stores token + name in localStorage.
-- [ ] On return visit, localStorage values are read and session is restored without showing the modal.
-- [ ] Test: `POST /api/session` returns correct session token format (UUID).
+- [x] `POST /api/session` creates a new `Player` document and returns `{ sessionToken, displayName }`.
+- [x] `POST /api/session` returns `400` for invalid/missing display names.
+- [x] `NameModal` renders with GSAP entrance animation.
+- [x] On submit, `useSession` calls the API and stores token + name in localStorage.
+- [x] On return visit, localStorage values are read and session is restored without showing the modal.
+- [x] Test: `POST /api/session` returns correct session token format (UUID).
 
 ---
 
