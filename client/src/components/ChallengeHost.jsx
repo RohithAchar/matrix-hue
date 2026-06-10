@@ -14,12 +14,12 @@ export default function ChallengeHost({ shareCode, totalScore, onHome }) {
 
   async function handleShare() {
     playClick();
-    const url = window.location.origin;
-    const text = `Can you beat my score? Join my MatrixHue challenge! Code: ${shareCode}\nPlay at: ${url}`;
+    const url = `${window.location.origin}/join/${shareCode}`;
+    const text = `Can you beat my score? Join my MatrixHue challenge!`;
     if (navigator.share) {
       try { await navigator.share({ title: 'MatrixHue Challenge', text, url }); } catch {}
     } else {
-      navigator.clipboard.writeText(`${shareCode} — ${url}`);
+      navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

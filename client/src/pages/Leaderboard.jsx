@@ -96,11 +96,12 @@ export default function Leaderboard() {
         setTimeout(() => setCopied(false), 2000);
       }
     } else {
-      const text = `Can you beat my score? Join my MatrixHue challenge! Code: ${shareCode}\nPlay at: ${url}`;
+      const joinUrl = `${url}/join/${shareCode}`;
+      const text = `Can you beat my score? Join my MatrixHue challenge!`;
       if (navigator.share) {
-        try { await navigator.share({ title: 'MatrixHue Challenge', text, url }); } catch {}
+        try { await navigator.share({ title: 'MatrixHue Challenge', text, url: joinUrl }); } catch {}
       } else {
-        navigator.clipboard.writeText(`${shareCode} — ${url}`);
+        navigator.clipboard.writeText(joinUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
