@@ -162,8 +162,10 @@ export default function Home() {
               key={card.key}
               className={`mode-card ${mode === card.key ? 'selected' : ''}`}
               onClick={() => handleModeClick(card.key)}
-              onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: 1.05, y: -4, duration: 0.25, ease: 'power2.out' })}
-              onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, y: 0, duration: 0.25, ease: 'power2.out' })}
+              onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: 1.05, duration: 0.2, ease: 'back.out(1.7)' })}
+              onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, duration: 0.2, ease: 'power2.out' })}
+              onMouseDown={(e) => gsap.to(e.currentTarget, { scale: 1.1, duration: 0.15, ease: 'power2.out' })}
+              onMouseUp={(e) => gsap.to(e.currentTarget, { scale: 1.05, duration: 0.3, ease: 'elastic.out(1, 0.5)' })}
             >
               <span className="mode-icon">{card.icon}</span>
               <span className="mode-title">{card.title}</span>

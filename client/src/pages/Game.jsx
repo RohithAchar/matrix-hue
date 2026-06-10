@@ -8,11 +8,13 @@ import { scoreFromDelta } from '../utils/scoring';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../hooks/useSound';
 import { useSession } from '../hooks/useSession';
+import { useServiceUnavailable } from '../context/ServiceUnavailableContext';
 import ColorSwatch from '../components/ColorSwatch';
 import ChallengeHost from '../components/ChallengeHost';
 import Timer from '../components/Timer';
 import HSLSliderGroup from '../components/HSLSliderGroup';
 import ScoreReveal from '../components/ScoreReveal';
+import RetryBanner from '../components/RetryBanner';
 
 const DIFFICULTY_TIMES = { easy: 6, medium: 4, hard: 2 };
 
@@ -50,12 +52,16 @@ export default function Game() {
   const [guestSubmitting, setGuestSubmitting] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [globalDate, setGlobalDate] = useState(null);
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [challengeLoading, setChallengeLoading] = useState(false);
 
   const { displayName, sessionToken } = useSession();
+  const { setUnavailable } = useServiceUnavailable();
   const [gameId, setGameId] = useState(0);
 
   const fadeRef = useRef(null);
   const recreateRef = useRef(null);
+  const swatchRef = useRef(null);
   const labelRef = useRef(null);
   const prevRemaining = useRef(0);
 
@@ -79,6 +85,7 @@ export default function Game() {
         if (routeDifficulty) selectDifficulty(routeDifficulty);
         startGame();
       } else if (guestCode) {
+        setChallengeLoading(true);
         fetch(`/api/challenges/${guestCode}`)
           .then((res) => {
             if (!res.ok) throw new Error('Challenge not found');
@@ -89,23 +96,29 @@ export default function Game() {
             setTargets(data.targets);
             startGame();
           })
-          .catch(() => navigate('/'));
+          .catch(() => navigate('/'))
+          .finally(() => setChallengeLoading(false));
       }
     } else if (isGlobal) {
       if (!sessionToken) return;
       const diff = difficulty || 'easy';
       if (!difficulty) selectDifficulty('easy');
+      setGlobalLoading(true);
       fetch(`/api/global/init?difficulty=${diff}&sessionToken=${sessionToken}`)
         .then((res) => {
+          if (res.status === 503) { setUnavailable(true); return; }
           if (!res.ok) throw new Error('Failed to load global challenge');
           return res.json();
         })
         .then((data) => {
-          setGlobalDate(data.date);
-          setTargets(data.targets);
-          startGame();
+          if (data) {
+            setGlobalDate(data.date);
+            setTargets(data.targets);
+            startGame();
+          }
         })
-        .catch(() => navigate('/'));
+        .catch(() => navigate('/'))
+        .finally(() => setGlobalLoading(false));
     } else {
       if (!difficulty) selectDifficulty('easy');
       const ts = generateTargets(difficulty || 'easy', 5);
@@ -165,9 +178,18 @@ export default function Game() {
   useEffect(() => {
     if (phase === 'recreate' && recreateRef.current) {
       gsap.fromTo(
-        recreateRef.current,
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+        recreateRef.current.children,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, ease: 'power2.out' }
+      );
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === 'memorize' && swatchRef.current) {
+      gsap.fromTo(swatchRef.current,
+        { opacity: 0, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out' }
       );
     }
   }, [phase]);
@@ -215,6 +237,7 @@ export default function Game() {
             guessHsl: guess,
           }),
         });
+        if (res.status === 503) { setUnavailable(true); return; }
         if (res.status === 409) {
           setCompleted(true);
           return;
@@ -250,6 +273,7 @@ export default function Game() {
             guessHsl: guess,
           }),
         });
+        if (res.status === 503) { setUnavailable(true); return; }
         if (!res.ok) throw new Error('Failed to submit guess');
         const data = await res.json();
         const delta = cieDe2000(data.targetColor.h, data.targetColor.s, data.targetColor.l, guess.h, guess.s, guess.l);
@@ -308,6 +332,7 @@ export default function Game() {
           hostScore: { roundScores, totalScore, displayName },
         }),
       });
+      if (res.status === 503) { setUnavailable(true); return; }
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.error || `Server error (${res.status})`);
@@ -338,6 +363,26 @@ export default function Game() {
     );
   }
 
+  if (globalLoading) {
+    return (
+      <div className="game" style={{ backgroundColor: '#000' }}>
+        <div className="game-content">
+          <p className="loading-text">Loading today's challenge...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (challengeLoading) {
+    return (
+      <div className="game" style={{ backgroundColor: '#000' }}>
+        <div className="game-content">
+          <p className="loading-text">Loading challenge...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!target) return null;
 
   return (
@@ -347,7 +392,7 @@ export default function Game() {
           <>
             <div className="round-header">Round {round + 1} of 5</div>
             <div className="memorize-section">
-              <div className="swatch-wrapper">
+              <div className="swatch-wrapper" ref={swatchRef}>
                 <ColorSwatch h={target.h} s={target.s} l={target.l} size={200} />
                 {distractLabel && (
                   <span className="swatch-label-wrong" style={{ color: distractLabel.color }}>{distractLabel.text}</span>
@@ -381,12 +426,6 @@ export default function Game() {
             >
               {guestSubmitting ? 'Submitting...' : 'Submit Guess'}
             </button>
-            {guestError && (
-              <div className="challenge-error">
-                <p>Failed to submit. Try again.</p>
-                <button className="game-btn" onClick={handleSubmit}>Retry</button>
-              </div>
-            )}
           </div>
         )}
 
@@ -424,12 +463,7 @@ export default function Game() {
                 <button className="game-btn" disabled={saving} onClick={handleSaveChallenge}>
                   {saving ? 'Saving...' : 'Save Challenge'}
                 </button>
-                {saveError && (
-                  <div className="challenge-error">
-                    <p>Failed to save. Your progress was saved locally.</p>
-                    <button className="game-btn" onClick={handleSaveChallenge}>Retry</button>
-                  </div>
-                )}
+                {saveError && <RetryBanner message="Failed to save challenge" onRetry={handleSaveChallenge} onDismiss={() => setSaveError(null)} />}
               </div>
             ) : isGlobal && globalDate ? (
               <div className="global-actions">
@@ -450,6 +484,9 @@ export default function Game() {
               View Leaderboard
             </button>
           </>
+        )}
+        {guestError && (
+          <RetryBanner message="Failed to submit guess" onRetry={handleSubmit} onDismiss={() => setGuestError(null)} />
         )}
       </div>
     </div>

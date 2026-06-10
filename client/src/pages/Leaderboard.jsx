@@ -67,11 +67,11 @@ export default function Leaderboard() {
       const allRows = [...rowsRef.current];
       if (currentRowRef.current) allRows.push(currentRowRef.current);
       if (allRows.length > 0) {
-        gsap.fromTo(
-          allRows,
-          { opacity: 0, x: -20 },
-          { opacity: 1, x: 0, duration: 0.35, stagger: 0.06, ease: 'power2.out' }
-        );
+          gsap.fromTo(
+            allRows,
+            { opacity: 0, x: 20 },
+            { opacity: 1, x: 0, duration: 0.4, stagger: 0.05, ease: 'power2.out' }
+          );
       }
     }
   }, [loading, data]);

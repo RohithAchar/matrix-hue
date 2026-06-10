@@ -7,7 +7,7 @@ export default function ScoreReveal({ target, guess, score, delta, onNext, round
   const revealRef = useRef(null);
 
   useEffect(() => {
-    gsap.fromTo(revealRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
+    gsap.fromTo(revealRef.current, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, ease: 'power2.out' });
   }, []);
 
   useEffect(() => {
