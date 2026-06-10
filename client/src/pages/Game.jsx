@@ -10,6 +10,8 @@ import ColorSwatch from '../components/ColorSwatch';
 import Timer from '../components/Timer';
 import HSLSliderGroup from '../components/HSLSliderGroup';
 import ScoreReveal from '../components/ScoreReveal';
+import DistractionOverlay from '../components/DistractionOverlay';
+import DistractionBackgroundShifter from '../components/DistractionBackgroundShifter';
 
 const DIFFICULTY_TIMES = { easy: 6, medium: 4, hard: 2 };
 
@@ -26,10 +28,7 @@ export default function Game() {
   const [touched, setTouched] = useState(false);
   const [result, setResult] = useState(null);
 
-  const [bgColor, setBgColor] = useState(null);
-  const [distractLabel, setDistractLabel] = useState(null);
-  const bgAnimRef = useRef(null);
-  const labelRef = useRef(null);
+  const memorizeRef = useRef(null);
   const fadeRef = useRef(null);
   const recreateRef = useRef(null);
 
@@ -78,50 +77,6 @@ export default function Game() {
     }
   }, [phase]);
 
-  const shouldAnimateBg =
-    (difficulty === 'medium' && phase === 'memorize') ||
-    (difficulty === 'hard' && phase === 'memorize');
-
-  const COLOR_NAMES = [
-    'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink',
-    'brown', 'cyan', 'magenta', 'lime', 'teal', 'indigo', 'violet',
-    'gold', 'silver', 'coral', 'maroon', 'navy', 'olive', 'plum',
-    'tan', 'beige', 'mint', 'lavender', 'crimson', 'turquoise',
-  ];
-
-  useEffect(() => {
-    if (!shouldAnimateBg) {
-      setBgColor(null);
-      setDistractLabel(null);
-      return;
-    }
-
-    let hue = Math.random() * 360;
-    const interval = difficulty === 'hard' ? 80 : 200;
-    const step = difficulty === 'hard' ? 80 : 60;
-
-    bgAnimRef.current = setInterval(() => {
-      hue = (hue + step + Math.random() * 30) % 360;
-      const sat = 40 + Math.random() * 60;
-      const lit = 20 + Math.random() * 40;
-      setBgColor(`hsl(${Math.round(hue)}, ${Math.round(sat)}%, ${Math.round(lit)}%)`);
-    }, interval);
-
-    labelRef.current = setInterval(() => {
-      setDistractLabel({
-        text: COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)],
-        color: `hsl(${Math.round(Math.random() * 360)}, ${Math.round(60 + Math.random() * 40)}%, ${Math.round(50 + Math.random() * 50)}%)`,
-      });
-    }, difficulty === 'hard' ? 400 : 800);
-
-    return () => {
-      clearInterval(bgAnimRef.current);
-      clearInterval(labelRef.current);
-      bgAnimRef.current = null;
-      labelRef.current = null;
-    };
-  }, [shouldAnimateBg, difficulty]);
-
   function handleSliderChange(hsl) {
     setGuess(hsl);
     if (!touched) setTouched(true);
@@ -153,17 +108,15 @@ export default function Game() {
 
   return (
     <div className="game" style={{ backgroundColor: '#000' }}>
-      {bgColor && <div className="bg-distract" style={{ backgroundColor: bgColor }} />}
       <div className="game-content">
         {phase === 'memorize' && (
           <>
             <div className="round-header">Round {round + 1} of 5</div>
-            <div className="memorize-section">
+            <div className="memorize-section" ref={memorizeRef}>
               <div className="swatch-wrapper">
                 <ColorSwatch h={target.h} s={target.s} l={target.l} size={200} />
-                {distractLabel && (
-                  <span className="swatch-label-wrong" style={{ color: distractLabel.color }}>{distractLabel.text}</span>
-                )}
+                <DistractionOverlay difficulty={difficulty} />
+                <DistractionBackgroundShifter difficulty={difficulty} containerRef={memorizeRef} />
               </div>
               <Timer duration={duration} remaining={remaining} onComplete={() => {}} />
             </div>
