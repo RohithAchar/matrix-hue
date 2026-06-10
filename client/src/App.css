@@ -1223,6 +1223,25 @@ body {
   justify-content: center;
 }
 
+.navbar-lb-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.navbar-lb-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eee;
+}
+
 .recent-rooms {
   display: flex;
   flex-wrap: wrap;

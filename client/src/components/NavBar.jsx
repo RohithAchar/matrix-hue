@@ -3,6 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import SoundToggle from './SoundToggle';
 import InfoModal from './InfoModal';
 
+const TODAY = new Date().toISOString().slice(0, 10);
+
 function getPageTitle(pathname, params) {
   if (pathname === '/') return null;
   if (pathname.startsWith('/play/single')) return 'Single Player';
@@ -36,6 +38,12 @@ export default function NavBar() {
               Home
             </button>
           )}
+          <button className="navbar-lb-btn" onClick={() => navigate(`/leaderboard/global/easy/${TODAY}`)}>
+            Global
+          </button>
+          <button className="navbar-lb-btn" onClick={() => navigate('/', { state: { showFriendsLb: true } })}>
+            Friends
+          </button>
           <SoundToggle />
           <button className="navbar-info" onClick={() => setShowInfo(true)}>
             ?

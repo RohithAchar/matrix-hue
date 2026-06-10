@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import DifficultySelector from '../components/DifficultySelector';
 import NameModal from '../components/NameModal';
@@ -14,13 +14,13 @@ const MODE_CARDS = [
   { key: 'friends', icon: '👥', title: 'Play with Friends', desc: 'Challenge friends with a code.' },
   { key: 'global', icon: '🌍', title: 'Global', desc: 'Compete worldwide, daily.' },
 ];
-const TODAY = new Date().toISOString().slice(0, 10);
 
 export default function Home() {
   const { isLoggedIn, loading: sessionLoading } = useSession();
   const { difficulty, mode, selectDifficulty, selectMode } = useGame();
   const { playClick } = useSound();
   const navigate = useNavigate();
+  const location = useLocation();
   const bgRef = useRef(null);
   const headerRef = useRef(null);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -42,6 +42,13 @@ export default function Home() {
       setRecentRooms(stored);
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (location.state?.showFriendsLb) {
+      setFriendsAction('view-lb');
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
 
   async function handleRetryChallenge() {
     if (!pendingChallenge) return;
@@ -194,17 +201,6 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="home-leaderboard-links">
-          <h3 className="lb-links-title">Leaderboards</h3>
-          <div className="lb-links-row">
-            <button className="game-btn" onClick={() => { playClick(); navigate(`/leaderboard/global/${difficulty || 'easy'}/${TODAY}`); }}>
-              Global Leaderboard
-            </button>
-            <button className="game-btn" onClick={() => { playClick(); setFriendsAction('view-lb'); }}>
-              Friends Leaderboard
-            </button>
-          </div>
-        </div>
         {friendsAction === 'create' && (
           <div className="friends-actions">
             <h2>Play with Friends</h2>
