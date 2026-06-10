@@ -84,13 +84,13 @@ Create or extend `client/src/context/GameContext.jsx`:
 
 ## Acceptance Criteria
 
-- [ ] Three difficulty pills render, clickable, with one selected at a time.
-- [ ] Background color changes with GSAP animation when difficulty changes.
-- [ ] Three mode cards render with hover GSAP animation (scale).
-- [ ] Clicking a card dispatches mode + difficulty selection.
-- [ ] If no difficulty selected when mode is clicked, Easy is auto-selected.
-- [ ] `GameContext` holds the selected mode and difficulty.
-- [ ] (Bonus) Test: clicking through different difficulties changes the background color value.
+- [x] Three difficulty pills render, clickable, with one selected at a time.
+- [x] Background color changes with GSAP animation when difficulty changes.
+- [x] Three mode cards render with hover GSAP animation (scale).
+- [x] Clicking a card dispatches mode + difficulty selection.
+- [x] If no difficulty selected when mode is clicked, Easy is auto-selected.
+- [x] `GameContext` holds the selected mode and difficulty.
+- [x] (Bonus) Test: clicking through different difficulties changes the background color value.
 
 ---
 

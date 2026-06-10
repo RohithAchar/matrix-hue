@@ -1,31 +1,18 @@
 import { Routes, Route } from 'react-router-dom';
-import { SessionProvider, useSession } from './hooks/useSession';
-
-function HomePage() {
-  const { isLoggedIn, loading } = useSession();
-
-  if (loading) return null;
-
-  return (
-    <div>
-      <h1>Hello MatrixHue</h1>
-      {isLoggedIn ? (
-        <p>Welcome back!</p>
-      ) : (
-        <p>Click a mode to get started</p>
-      )}
-    </div>
-  );
-}
+import { SessionProvider } from './hooks/useSession';
+import { GameProvider } from './context/GameContext';
+import Home from './pages/Home';
 
 export default function App() {
   return (
     <SessionProvider>
-      <div className="app">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-        </Routes>
-      </div>
+      <GameProvider>
+        <div className="app">
+          <Routes>
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </div>
+      </GameProvider>
     </SessionProvider>
   );
 }

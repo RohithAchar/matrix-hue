@@ -1,35 +1,35 @@
-/*
- * GameContext.jsx — Global game state
- *
- * TODO:
- * - Provide state for:
- *   difficulty: "easy" | "medium" | "hard" | null
- *   mode: "single" | "friends" | "global" | null
- *   round: number (0-4)
- *   phase: "memorize" | "fade" | "recreate" | "reveal" | "finished"
- *   rounds: array of { target, guess, delta, score }
- *   totalScore: number
- *   shareCode: string (for friends mode)
- *   challengeTargets: array (for friends/global)
- * - Provide action functions:
- *   selectDifficulty(d), selectMode(m), startGame(), submitGuess(),
- *   nextRound(), resetGame()
- * - Export GameProvider + useGame context
- */
-
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from 'react';
 
 const GameContext = createContext(null);
 
 export function GameProvider({ children }) {
-  // TODO: implement game state management
+  const [difficulty, setDifficulty] = useState(null);
+  const [mode, setMode] = useState(null);
+
+  function selectDifficulty(d) {
+    setDifficulty(d);
+  }
+
+  function selectMode(m) {
+    setMode(m);
+  }
+
+  function resetSelection() {
+    setDifficulty(null);
+    setMode(null);
+  }
+
   return (
-    <GameContext.Provider value={{}}>
+    <GameContext.Provider
+      value={{ difficulty, mode, selectDifficulty, selectMode, resetSelection }}
+    >
       {children}
     </GameContext.Provider>
   );
 }
 
 export function useGame() {
-  return useContext(GameContext);
+  const ctx = useContext(GameContext);
+  if (!ctx) throw new Error('useGame must be used within GameProvider');
+  return ctx;
 }
