@@ -10,10 +10,15 @@ import ColorSwatch from '../components/ColorSwatch';
 import Timer from '../components/Timer';
 import HSLSliderGroup from '../components/HSLSliderGroup';
 import ScoreReveal from '../components/ScoreReveal';
-import DistractionOverlay from '../components/DistractionOverlay';
-import DistractionBackgroundShifter from '../components/DistractionBackgroundShifter';
 
 const DIFFICULTY_TIMES = { easy: 6, medium: 4, hard: 2 };
+
+const COLOR_NAMES = [
+  'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink',
+  'brown', 'cyan', 'magenta', 'lime', 'teal', 'indigo', 'violet',
+  'gold', 'silver', 'coral', 'maroon', 'navy', 'olive', 'plum',
+  'tan', 'beige', 'mint', 'lavender', 'crimson', 'turquoise',
+];
 
 export default function Game() {
   const {
@@ -27,10 +32,11 @@ export default function Game() {
   const [guess, setGuess] = useState(randomHsl());
   const [touched, setTouched] = useState(false);
   const [result, setResult] = useState(null);
+  const [distractLabel, setDistractLabel] = useState(null);
 
-  const memorizeRef = useRef(null);
   const fadeRef = useRef(null);
   const recreateRef = useRef(null);
+  const labelRef = useRef(null);
 
   const duration = DIFFICULTY_TIMES[difficulty] || 6;
 
@@ -77,6 +83,27 @@ export default function Game() {
     }
   }, [phase]);
 
+  useEffect(() => {
+    const shouldShow = (difficulty === 'medium' || difficulty === 'hard') && phase === 'memorize';
+    if (!shouldShow) {
+      setDistractLabel(null);
+      return;
+    }
+
+    labelRef.current = setInterval(() => {
+      const text = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
+      const hue = Math.round(Math.random() * 360);
+      const sat = 60 + Math.round(Math.random() * 40);
+      const lit = 50 + Math.round(Math.random() * 50);
+      setDistractLabel({ text, color: `hsl(${hue}, ${sat}%, ${lit}%)` });
+    }, difficulty === 'hard' ? 400 : 800);
+
+    return () => {
+      clearInterval(labelRef.current);
+      labelRef.current = null;
+    };
+  }, [difficulty, phase]);
+
   function handleSliderChange(hsl) {
     setGuess(hsl);
     if (!touched) setTouched(true);
@@ -112,11 +139,12 @@ export default function Game() {
         {phase === 'memorize' && (
           <>
             <div className="round-header">Round {round + 1} of 5</div>
-            <div className="memorize-section" ref={memorizeRef}>
+            <div className="memorize-section">
               <div className="swatch-wrapper">
                 <ColorSwatch h={target.h} s={target.s} l={target.l} size={200} />
-                <DistractionOverlay difficulty={difficulty} />
-                <DistractionBackgroundShifter difficulty={difficulty} containerRef={memorizeRef} />
+                {distractLabel && (
+                  <span className="swatch-label-wrong" style={{ color: distractLabel.color }}>{distractLabel.text}</span>
+                )}
               </div>
               <Timer duration={duration} remaining={remaining} onComplete={() => {}} />
             </div>
