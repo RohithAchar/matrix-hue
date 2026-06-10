@@ -60,6 +60,7 @@ async function createChallenge(req, res) {
         displayName: hostScore.displayName || player.displayName,
         roundScores: hostScore.roundScores,
         totalScore: hostScore.totalScore,
+        finishedAt: new Date(),
       }],
     });
 
@@ -142,4 +143,34 @@ async function submitRound(req, res) {
   }
 }
 
-module.exports = { createChallenge, getChallenge, submitRound };
+async function getLeaderboard(req, res) {
+  const challenge = await Challenge.findOne({ shareCode: req.params.code });
+
+  if (!challenge) {
+    return res.status(404).json({ error: 'Challenge not found' });
+  }
+
+  const completed = challenge.playerScores
+    .filter((ps) => ps.finishedAt)
+    .sort((a, b) => {
+      const scoreDiff = b.totalScore - a.totalScore;
+      if (scoreDiff !== 0) return scoreDiff;
+      return new Date(a.finishedAt) - new Date(b.finishedAt);
+    })
+    .map((ps, i) => ({
+      rank: i + 1,
+      sessionToken: ps.sessionToken,
+      displayName: ps.displayName,
+      roundScores: ps.roundScores,
+      totalScore: ps.totalScore,
+      finishedAt: ps.finishedAt,
+    }));
+
+  res.json({
+    shareCode: challenge.shareCode,
+    difficulty: challenge.difficulty,
+    entries: completed,
+  });
+}
+
+module.exports = { createChallenge, getChallenge, submitRound, getLeaderboard };

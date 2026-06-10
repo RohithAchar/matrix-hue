@@ -134,6 +134,12 @@ export default function Game() {
   }, [phase, result, playScore]);
 
   useEffect(() => {
+    if (phase === 'finished' && isGuest && guestCode) {
+      navigate(`/leaderboard/friends/${guestCode}`, { replace: true });
+    }
+  }, [phase, isGuest, guestCode, navigate]);
+
+  useEffect(() => {
     if (phase === 'recreate' && recreateRef.current) {
       gsap.fromTo(
         recreateRef.current,
@@ -372,7 +378,12 @@ export default function Game() {
           </div>
         )}
         {phase === 'finished' && shareCode && (
-          <ChallengeHost shareCode={shareCode} totalScore={totalScore} onHome={handlePlayAgain} />
+          <>
+            <ChallengeHost shareCode={shareCode} totalScore={totalScore} onHome={handlePlayAgain} />
+            <button className="game-btn" onClick={() => { playClick(); navigate(`/leaderboard/friends/${shareCode}`); }}>
+              View Leaderboard
+            </button>
+          </>
         )}
       </div>
     </div>

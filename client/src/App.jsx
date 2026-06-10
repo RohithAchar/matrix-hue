@@ -3,6 +3,7 @@ import { SessionProvider } from './hooks/useSession';
 import { GameProvider } from './context/GameContext';
 import Home from './pages/Home';
 import Game from './pages/Game';
+import Leaderboard from './pages/Leaderboard';
 import SoundToggle from './components/SoundToggle';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/play/single" element={<Game />} />
             <Route path="/play/friends" element={<Game />} />
             <Route path="/play/friends/:code" element={<Game />} />
+            <Route path="/leaderboard/friends/:shareCode" element={<Leaderboard />} />
           </Routes>
         </div>
       </GameProvider>
