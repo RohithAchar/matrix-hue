@@ -217,21 +217,21 @@ export default function Home() {
         {friendsAction === 'view-lb' && (
           <div className="join-challenge">
             <h2>Friends Leaderboard</h2>
-            <p className="join-subtitle">Select a room or enter a code:</p>
-            {recentRooms.length > 0 && (
-              <div className="recent-rooms">
-                {recentRooms.map((r) => (
-                  <button key={r.shareCode} className="room-btn" onClick={() => { playClick(); navigate(`/leaderboard/friends/${r.shareCode}`); }}>
-                    <span className="room-code">{r.shareCode}</span>
-                    <span className="room-diff">{r.difficulty}</span>
-                  </button>
-                ))}
-              </div>
+            {recentRooms.length > 0 ? (
+              <>
+                <p className="join-subtitle">Your rooms:</p>
+                <div className="recent-rooms">
+                  {recentRooms.map((r) => (
+                    <button key={r.shareCode} className="room-btn" onClick={() => { playClick(); navigate(`/leaderboard/friends/${r.shareCode}`); }}>
+                      <span className="room-code">{r.shareCode}</span>
+                      <span className="room-diff">{r.difficulty}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="join-subtitle">No rooms played yet. Start a friends challenge to see it here.</p>
             )}
-            <form onSubmit={(e) => { e.preventDefault(); const code = e.target.code.value.trim().toUpperCase(); if (code) navigate(`/leaderboard/friends/${code}`); }}>
-              <input className="join-input" name="code" maxLength={6} placeholder="CODE" autoComplete="off" />
-              <button className="game-btn" type="submit" style={{ marginTop: 8 }}>View</button>
-            </form>
             <button className="game-btn join-back" onClick={handleFriendsBack}>Back</button>
           </div>
         )}
