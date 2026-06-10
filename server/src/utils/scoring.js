@@ -1,11 +1,6 @@
-/*
- * scoring.js — Server-side logarithmic scoring
- *
- * Same function as client/src/utils/scoring.js
- *
- * TODO:
- * - scoreFromDelta(delta) → number (0-10, rounded to 1 decimal)
- * - Export for server usage (CommonJS)
- */
+function scoreFromDelta(delta) {
+  const score = 10 * (1 - delta / 100);
+  return Math.max(0, Math.round(score * 10) / 10);
+}
 
-// TODO: implement scoring
+module.exports = { scoreFromDelta };

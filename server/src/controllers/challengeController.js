@@ -1,5 +1,7 @@
 const Challenge = require('../models/Challenge');
 const Player = require('../models/Player');
+const { cieDe2000 } = require('../utils/cieDe2000');
+const { scoreFromDelta } = require('../utils/scoring');
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -68,4 +70,76 @@ async function createChallenge(req, res) {
   }
 }
 
-module.exports = { createChallenge };
+async function getChallenge(req, res) {
+  const challenge = await Challenge.findOne({ shareCode: req.params.code });
+
+  if (!challenge) {
+    return res.status(404).json({ error: 'Challenge not found' });
+  }
+
+  res.json({
+    difficulty: challenge.difficulty,
+    targets: challenge.targets,
+  });
+}
+
+async function submitRound(req, res) {
+  const { sessionToken, roundIndex, guessHsl } = req.body;
+
+  if (sessionToken == null || roundIndex == null || !guessHsl) {
+    return res.status(400).json({ error: 'sessionToken, roundIndex, and guessHsl are required' });
+  }
+
+  if (roundIndex < 0 || roundIndex > 4) {
+    return res.status(400).json({ error: 'roundIndex must be 0-4' });
+  }
+
+  const challenge = await Challenge.findOne({ shareCode: req.params.code });
+  if (!challenge) {
+    return res.status(404).json({ error: 'Challenge not found' });
+  }
+
+  const player = await Player.findOne({ sessionToken });
+  if (!player) {
+    return res.status(401).json({ error: 'Invalid session token' });
+  }
+
+  let entry = challenge.playerScores.find((ps) => ps.sessionToken === sessionToken);
+
+  if (entry && entry.roundScores.length >= 5) {
+    return res.status(409).json({ error: 'You have already completed this challenge' });
+  }
+
+  const target = challenge.targets[roundIndex];
+  const delta = cieDe2000(
+    target.h, target.s, target.l,
+    guessHsl.h, guessHsl.s, guessHsl.l
+  );
+  const score = scoreFromDelta(delta);
+
+  if (!entry) {
+    challenge.playerScores.push({
+      sessionToken,
+      displayName: player.displayName,
+      roundScores: [],
+    });
+    entry = challenge.playerScores[challenge.playerScores.length - 1];
+  }
+
+  entry.roundScores[roundIndex] = score;
+
+  if (roundIndex === 4) {
+    entry.totalScore = entry.roundScores.reduce((sum, s) => sum + s, 0);
+    entry.finishedAt = new Date();
+  }
+
+  try {
+    await challenge.save();
+    res.json({ score, targetColor: target });
+  } catch (err) {
+    console.error('Failed to save round:', err.message);
+    res.status(500).json({ error: 'Failed to save round result' });
+  }
+}
+
+module.exports = { createChallenge, getChallenge, submitRound };

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import DifficultySelector from '../components/DifficultySelector';
 import NameModal from '../components/NameModal';
+import JoinChallenge from '../components/JoinChallenge';
 import { useSession } from '../hooks/useSession';
 import { useGame } from '../context/GameContext';
 import { useSound } from '../hooks/useSound';
@@ -26,6 +27,7 @@ export default function Home() {
   const [retrying, setRetrying] = useState(false);
   const [retryCode, setRetryCode] = useState(null);
   const [retryError, setRetryError] = useState(null);
+  const [friendsAction, setFriendsAction] = useState(null);
 
   useEffect(() => {
     try {
@@ -103,10 +105,25 @@ export default function Home() {
     if (m === 'single') {
       navigate('/play/single');
     } else if (m === 'friends') {
-      navigate('/play/friends');
+      setFriendsAction('create');
     } else if (m === 'global') {
       navigate('/play/global');
     }
+  }
+
+  function handleFriendsCreate() {
+    playClick();
+    navigate('/play/friends');
+  }
+
+  function handleFriendsJoin() {
+    playClick();
+    setFriendsAction('join');
+  }
+
+  function handleFriendsBack() {
+    playClick();
+    setFriendsAction(null);
   }
 
   function handleNameSuccess() {
@@ -154,6 +171,19 @@ export default function Home() {
             </button>
           ))}
         </div>
+        {friendsAction === 'create' && (
+          <div className="friends-actions">
+            <h2>Play with Friends</h2>
+            <div className="friends-buttons">
+              <button className="game-btn" onClick={handleFriendsCreate}>Create Challenge</button>
+              <button className="game-btn" onClick={handleFriendsJoin}>Join Challenge</button>
+            </div>
+            <button className="game-btn join-back" onClick={handleFriendsBack}>Back</button>
+          </div>
+        )}
+        {friendsAction === 'join' && (
+          <JoinChallenge onBack={handleFriendsBack} />
+        )}
       </div>
 
       {showNameModal && <NameModal onSuccess={handleNameSuccess} />}

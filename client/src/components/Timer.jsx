@@ -70,7 +70,7 @@ export default function Timer({ duration, remaining }) {
           fill="#eee"
           fontSize="28"
           fontWeight="bold"
-          fontVariantNumeric="tabular-nums"
+          className="timer-text"
         >
           {remaining}
         </text>

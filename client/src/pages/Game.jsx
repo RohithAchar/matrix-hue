@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { useGame } from '../context/GameContext';
 import { generateTargets, randomHsl } from '../utils/colorGen';
@@ -26,12 +26,17 @@ const COLOR_NAMES = [
 export default function Game() {
   const {
     difficulty, mode, round, phase, rounds,
-    startGame, setPhase, addRound, nextRound, finishGame, totalScore,
+    startGame, setPhase, addRound, nextRound, finishGame, totalScore, selectDifficulty,
   } = useGame();
   const navigate = useNavigate();
+  const { code: guestCode } = useParams();
+  const location = useLocation();
+  const routeTargets = location.state?.targets;
+  const routeDifficulty = location.state?.difficulty;
+  const isGuest = !!guestCode;
   const { playRoundStart, playTick, playFade, playScore, playClick } = useSound();
 
-  const [targets, setTargets] = useState([]);
+  const [targets, setTargets] = useState(routeTargets || []);
   const [target, setTarget] = useState(null);
   const [guess, setGuess] = useState(randomHsl());
   const [touched, setTouched] = useState(false);
@@ -40,13 +45,17 @@ export default function Game() {
   const [shareCode, setShareCode] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const [guestError, setGuestError] = useState(null);
+  const [guestSubmitting, setGuestSubmitting] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
-  const { displayName } = useSession();
+  const { displayName, sessionToken } = useSession();
 
   const fadeRef = useRef(null);
   const recreateRef = useRef(null);
   const labelRef = useRef(null);
   const prevRemaining = useRef(0);
+  const initRef = useRef(false);
 
   const duration = DIFFICULTY_TIMES[difficulty] || 6;
 
@@ -55,10 +64,33 @@ export default function Game() {
   });
 
   useEffect(() => {
-    const ts = generateTargets(difficulty || 'easy', 5);
-    setTargets(ts);
-    startGame();
-  }, [difficulty, startGame]);
+    if (initRef.current) return;
+    initRef.current = true;
+
+    if (isGuest) {
+      if (targets.length > 0) {
+        if (routeDifficulty) selectDifficulty(routeDifficulty);
+        startGame();
+      } else if (guestCode) {
+        fetch(`/api/challenges/${guestCode}`)
+          .then((res) => {
+            if (!res.ok) throw new Error('Challenge not found');
+            return res.json();
+          })
+          .then((data) => {
+            selectDifficulty(data.difficulty);
+            setTargets(data.targets);
+            startGame();
+          })
+          .catch(() => navigate('/'));
+      }
+    } else {
+      if (!difficulty) selectDifficulty('easy');
+      const ts = generateTargets(difficulty || 'easy', 5);
+      setTargets(ts);
+      startGame();
+    }
+  }, []);
 
   useEffect(() => {
     if (targets.length === 0) return;
@@ -137,9 +169,44 @@ export default function Game() {
     if (!touched) setTouched(true);
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     playClick();
     pauseTimer();
+
+    if (isGuest) {
+      setGuestSubmitting(true);
+      setGuestError(null);
+      try {
+        const res = await fetch(`/api/challenges/${guestCode}/round`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionToken,
+            roundIndex: round,
+            guessHsl: guess,
+          }),
+        });
+        if (res.status === 409) {
+          setCompleted(true);
+          return;
+        }
+        if (!res.ok) throw new Error('Failed to submit guess');
+        const data = await res.json();
+        const delta = cieDe2000(data.targetColor.h, data.targetColor.s, data.targetColor.l, guess.h, guess.s, guess.l);
+        const roundResult = { target: data.targetColor, guess: { ...guess }, score: data.score, delta };
+        setResult(roundResult);
+        addRound(roundResult);
+        setPhase('reveal');
+      } catch (err) {
+        setGuestError(err.message);
+        setGuestSubmitting(false);
+        return;
+      } finally {
+        setGuestSubmitting(false);
+      }
+      return;
+    }
+
     const delta = cieDe2000(target.h, target.s, target.l, guess.h, guess.s, guess.l);
     const score = scoreFromDelta(delta);
     const res = { target, guess: { ...guess }, delta, score };
@@ -170,13 +237,16 @@ export default function Game() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionToken: localStorage.getItem('sessionToken'),
+          sessionToken,
           difficulty,
           targets,
           hostScore: { roundScores, totalScore, displayName },
         }),
       });
-      if (!res.ok) throw new Error('Failed to save challenge');
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Server error (${res.status})`);
+      }
       const data = await res.json();
       setShareCode(data.shareCode);
     } catch (err) {
@@ -189,6 +259,18 @@ export default function Game() {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (completed) {
+    return (
+      <div className="game" style={{ backgroundColor: '#000' }}>
+        <div className="game-content">
+          <h1>Already Completed</h1>
+          <p>You have already completed this challenge.</p>
+          <button className="game-btn" onClick={() => navigate('/')}>Back to Home</button>
+        </div>
+      </div>
+    );
   }
 
   if (!target) return null;
@@ -229,11 +311,17 @@ export default function Game() {
             />
             <button
               className="game-btn"
-              disabled={!touched}
+              disabled={!touched || guestSubmitting}
               onClick={handleSubmit}
             >
-              Submit Guess
+              {guestSubmitting ? 'Submitting...' : 'Submit Guess'}
             </button>
+            {guestError && (
+              <div className="challenge-error">
+                <p>Failed to submit. Try again.</p>
+                <button className="game-btn" onClick={handleSubmit}>Retry</button>
+              </div>
+            )}
           </div>
         )}
 
@@ -266,7 +354,7 @@ export default function Game() {
                 </div>
               ))}
             </div>
-            {mode === 'friends' ? (
+            {mode === 'friends' && !isGuest ? (
               <div className="challenge-save-area">
                 <button className="game-btn" disabled={saving} onClick={handleSaveChallenge}>
                   {saving ? 'Saving...' : 'Save Challenge'}
