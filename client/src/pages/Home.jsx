@@ -14,6 +14,7 @@ const MODE_CARDS = [
   { key: 'friends', icon: '👥', title: 'Play with Friends', desc: 'Challenge friends with a code.' },
   { key: 'global', icon: '🌍', title: 'Global', desc: 'Compete worldwide, daily.' },
 ];
+const TODAY = new Date().toISOString().slice(0, 10);
 
 export default function Home() {
   const { isLoggedIn, loading: sessionLoading } = useSession();
@@ -187,6 +188,18 @@ export default function Home() {
             </button>
           ))}
         </div>
+
+        <div className="home-leaderboard-links">
+          <h3 className="lb-links-title">Leaderboards</h3>
+          <div className="lb-links-row">
+            <button className="game-btn" onClick={() => { playClick(); navigate(`/leaderboard/global/${difficulty || 'easy'}/${TODAY}`); }}>
+              Global Leaderboard
+            </button>
+            <button className="game-btn" onClick={() => { playClick(); setFriendsAction('view-lb'); }}>
+              Friends Leaderboard
+            </button>
+          </div>
+        </div>
         {friendsAction === 'create' && (
           <div className="friends-actions">
             <h2>Play with Friends</h2>
@@ -199,6 +212,17 @@ export default function Home() {
         )}
         {friendsAction === 'join' && (
           <JoinChallenge onBack={handleFriendsBack} />
+        )}
+        {friendsAction === 'view-lb' && (
+          <div className="join-challenge">
+            <h2>View Friends Leaderboard</h2>
+            <p className="join-subtitle">Enter the share code:</p>
+            <form onSubmit={(e) => { e.preventDefault(); const code = e.target.code.value.trim().toUpperCase(); if (code) navigate(`/leaderboard/friends/${code}`); }}>
+              <input className="join-input" name="code" maxLength={6} placeholder="CODE" autoComplete="off" />
+              <button className="game-btn" type="submit">View</button>
+            </form>
+            <button className="game-btn join-back" onClick={handleFriendsBack}>Back</button>
+          </div>
         )}
       </div>
 

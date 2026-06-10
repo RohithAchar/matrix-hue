@@ -1203,6 +1203,26 @@ body {
   color: #eee;
 }
 
+.home-leaderboard-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.lb-links-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #eee;
+}
+
+.lb-links-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 /* === Mobile Breakpoints === */
 
 @media (max-width: 768px) {
