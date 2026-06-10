@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const SessionContext = createContext(null);
 
@@ -17,7 +17,7 @@ export function SessionProvider({ children }) {
     setLoading(false);
   }, []);
 
-  function createSession(name) {
+  const createSession = useCallback((name) => {
     return fetch('/api/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,26 +34,29 @@ export function SessionProvider({ children }) {
       setDisplayName(data.displayName);
       return data;
     });
-  }
+  }, []);
 
-  function clearSession() {
+  const clearSession = useCallback(() => {
     localStorage.removeItem('sessionToken');
     localStorage.removeItem('displayName');
     setSessionToken(null);
     setDisplayName(null);
-  }
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      sessionToken,
+      displayName,
+      isLoggedIn: !!sessionToken,
+      loading,
+      createSession,
+      clearSession,
+    }),
+    [sessionToken, displayName, loading, createSession, clearSession]
+  );
 
   return (
-    <SessionContext.Provider
-      value={{
-        sessionToken,
-        displayName,
-        isLoggedIn: !!sessionToken,
-        loading,
-        createSession,
-        clearSession,
-      }}
-    >
+    <SessionContext.Provider value={value}>
       {children}
     </SessionContext.Provider>
   );

@@ -47,7 +47,15 @@ export default function Home() {
 
   function navigateToGame(m) {
     const diff = difficulty || 'easy';
-    console.log('Start game:', { mode: m, difficulty: diff });
+    selectDifficulty(diff);
+
+    if (m === 'single') {
+      navigate('/play/single');
+    } else if (m === 'friends') {
+      navigate('/join');
+    } else if (m === 'global') {
+      navigate('/play/global');
+    }
   }
 
   function handleNameSuccess() {

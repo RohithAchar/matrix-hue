@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback } from 'react';
 
 export default function HSLSlider({ label, value, min, max, unit, onChange, trackColor }) {
   const trackRef = useRef(null);
@@ -31,7 +31,7 @@ export default function HSLSlider({ label, value, min, max, unit, onChange, trac
     function onMove(ev) {
       if (!dragging.current) return;
       const v = valueFromEvent(ev.clientY);
-      if (v !== value) onChange(v);
+      onChange(v);
     }
 
     function onUp() {
@@ -57,26 +57,27 @@ export default function HSLSlider({ label, value, min, max, unit, onChange, trac
   return (
     <div className="hsl-slider">
       <label className="slider-label">{label}</label>
-      <div
-        className="slider-track"
-        ref={trackRef}
-        onClick={handleTrackClick}
-        style={{ background: trackColor }}
-      >
-        <div className="slider-fill" style={{ height: `${pct}%` }} />
+      <div className="slider-track-wrap">
         <div
-          className="slider-thumb"
-          ref={thumbRef}
-          style={{ bottom: `${pct}%` }}
-          onMouseDown={handleMouseDown}
-          tabIndex={0}
-          role="slider"
-          aria-label={label}
-          aria-valuemin={min}
-          aria-valuemax={max}
-          aria-valuenow={value}
-          onKeyDown={handleKeyDown}
-        />
+          className="slider-track"
+          ref={trackRef}
+          onClick={handleTrackClick}
+          style={{ background: trackColor }}
+        >
+          <div
+            className="slider-thumb"
+            ref={thumbRef}
+            style={{ bottom: `${pct}%` }}
+            onMouseDown={handleMouseDown}
+            tabIndex={0}
+            role="slider"
+            aria-label={label}
+            aria-valuemin={min}
+            aria-valuemax={max}
+            aria-valuenow={value}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
       </div>
       <span className="slider-value">{value}{unit}</span>
     </div>

@@ -19,7 +19,6 @@
  */
 
 export function scoreFromDelta(delta) {
-  const maxDelta = 100;
-  const score = 10 * (1 - Math.log(1 + delta) / Math.log(1 + maxDelta));
+  const score = 10 * (1 - delta / 100);
   return Math.max(0, Math.round(score * 10) / 10);
 }

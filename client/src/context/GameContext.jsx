@@ -1,28 +1,62 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const GameContext = createContext(null);
 
 export function GameProvider({ children }) {
   const [difficulty, setDifficulty] = useState(null);
   const [mode, setMode] = useState(null);
+  const [round, setRound] = useState(0);
+  const [phase, setPhase] = useState('memorize');
+  const [rounds, setRounds] = useState([]);
 
-  function selectDifficulty(d) {
-    setDifficulty(d);
-  }
+  const totalScore = useMemo(
+    () => rounds.reduce((sum, r) => sum + r.score, 0),
+    [rounds]
+  );
 
-  function selectMode(m) {
-    setMode(m);
-  }
+  const selectDifficulty = useCallback((d) => setDifficulty(d), []);
+  const selectMode = useCallback((m) => setMode(m), []);
 
-  function resetSelection() {
+  const resetSelection = useCallback(() => {
     setDifficulty(null);
     setMode(null);
-  }
+  }, []);
+
+  const startGame = useCallback(() => {
+    setRound(0);
+    setPhase('memorize');
+    setRounds([]);
+  }, []);
+
+  const addRound = useCallback(
+    (result) => setRounds((prev) => [...prev, result]),
+    []
+  );
+
+  const nextRound = useCallback(() => {
+    setRound((prev) => prev + 1);
+    setPhase('memorize');
+  }, []);
+
+  const finishGame = useCallback(() => {
+    setPhase('finished');
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      difficulty, mode, round, phase, rounds, totalScore,
+      selectDifficulty, selectMode, resetSelection,
+      startGame, setPhase, addRound, nextRound, finishGame,
+    }),
+    [
+      difficulty, mode, round, phase, rounds, totalScore,
+      selectDifficulty, selectMode, resetSelection,
+      startGame, setPhase, addRound, nextRound, finishGame,
+    ]
+  );
 
   return (
-    <GameContext.Provider
-      value={{ difficulty, mode, selectDifficulty, selectMode, resetSelection }}
-    >
+    <GameContext.Provider value={value}>
       {children}
     </GameContext.Provider>
   );
