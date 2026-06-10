@@ -7,7 +7,9 @@ import { cieDe2000 } from '../utils/cieDe2000';
 import { scoreFromDelta } from '../utils/scoring';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../hooks/useSound';
+import { useSession } from '../hooks/useSession';
 import ColorSwatch from '../components/ColorSwatch';
+import ChallengeHost from '../components/ChallengeHost';
 import Timer from '../components/Timer';
 import HSLSliderGroup from '../components/HSLSliderGroup';
 import ScoreReveal from '../components/ScoreReveal';
@@ -35,6 +37,11 @@ export default function Game() {
   const [touched, setTouched] = useState(false);
   const [result, setResult] = useState(null);
   const [distractLabel, setDistractLabel] = useState(null);
+  const [shareCode, setShareCode] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
+  const { displayName } = useSession();
 
   const fadeRef = useRef(null);
   const recreateRef = useRef(null);
@@ -154,6 +161,36 @@ export default function Game() {
     navigate('/');
   }
 
+  async function handleSaveChallenge() {
+    setSaving(true);
+    setSaveError(null);
+    const roundScores = rounds.map((r) => r.score);
+    try {
+      const res = await fetch('/api/challenges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionToken: localStorage.getItem('sessionToken'),
+          difficulty,
+          targets,
+          hostScore: { roundScores, totalScore, displayName },
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save challenge');
+      const data = await res.json();
+      setShareCode(data.shareCode);
+    } catch (err) {
+      setSaveError(err.message);
+      try {
+        localStorage.setItem('pendingChallenge', JSON.stringify({
+          difficulty, targets, roundScores, totalScore, displayName,
+        }));
+      } catch {}
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (!target) return null;
 
   return (
@@ -212,7 +249,7 @@ export default function Game() {
           />
         )}
 
-        {phase === 'finished' && (
+        {phase === 'finished' && !shareCode && (
           <div className="final-score">
             <h1>Your score</h1>
             <div className="total-score">{Math.round(totalScore * 10) / 10} / 50</div>
@@ -229,8 +266,25 @@ export default function Game() {
                 </div>
               ))}
             </div>
-            <button className="game-btn" onClick={() => { playClick(); handlePlayAgain(); }}>Play Again</button>
+            {mode === 'friends' ? (
+              <div className="challenge-save-area">
+                <button className="game-btn" disabled={saving} onClick={handleSaveChallenge}>
+                  {saving ? 'Saving...' : 'Save Challenge'}
+                </button>
+                {saveError && (
+                  <div className="challenge-error">
+                    <p>Failed to save. Your progress was saved locally.</p>
+                    <button className="game-btn" onClick={handleSaveChallenge}>Retry</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button className="game-btn" onClick={() => { playClick(); handlePlayAgain(); }}>Play Again</button>
+            )}
           </div>
+        )}
+        {phase === 'finished' && shareCode && (
+          <ChallengeHost shareCode={shareCode} totalScore={totalScore} onHome={handlePlayAgain} />
         )}
       </div>
     </div>

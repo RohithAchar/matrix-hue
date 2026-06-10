@@ -22,6 +22,49 @@ export default function Home() {
   const bgRef = useRef(null);
   const [showNameModal, setShowNameModal] = useState(false);
   const [pendingMode, setPendingMode] = useState(null);
+  const [pendingChallenge, setPendingChallenge] = useState(null);
+  const [retrying, setRetrying] = useState(false);
+  const [retryCode, setRetryCode] = useState(null);
+  const [retryError, setRetryError] = useState(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('pendingChallenge');
+      if (raw) setPendingChallenge(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  async function handleRetryChallenge() {
+    if (!pendingChallenge) return;
+    setRetrying(true);
+    setRetryError(null);
+    setRetryCode(null);
+    try {
+      const res = await fetch('/api/challenges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionToken: localStorage.getItem('sessionToken'),
+          difficulty: pendingChallenge.difficulty,
+          targets: pendingChallenge.targets,
+          hostScore: {
+            roundScores: pendingChallenge.roundScores,
+            totalScore: pendingChallenge.totalScore,
+            displayName: pendingChallenge.displayName,
+          },
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      const data = await res.json();
+      setRetryCode(data.shareCode);
+      localStorage.removeItem('pendingChallenge');
+      setPendingChallenge(null);
+    } catch (err) {
+      setRetryError(err.message);
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   useEffect(() => {
     gsap.to(bgRef.current, {
@@ -60,7 +103,7 @@ export default function Home() {
     if (m === 'single') {
       navigate('/play/single');
     } else if (m === 'friends') {
-      navigate('/join');
+      navigate('/play/friends');
     } else if (m === 'global') {
       navigate('/play/global');
     }
@@ -78,6 +121,21 @@ export default function Home() {
 
   return (
     <div className="home" ref={bgRef}>
+      {pendingChallenge && !retryCode && (
+        <div className="pending-banner">
+          <span>You have an unsaved challenge</span>
+          <button disabled={retrying} onClick={handleRetryChallenge}>
+            {retrying ? 'Saving...' : 'Complete it?'}
+          </button>
+          {retryError && <span className="pending-error">{retryError}</span>}
+        </div>
+      )}
+      {retryCode && (
+        <div className="pending-banner success">
+          <span>Challenge saved! Code: <strong>{retryCode}</strong></span>
+          <button onClick={() => { setRetryCode(null); }}>Dismiss</button>
+        </div>
+      )}
       <div className="home-content">
         <DifficultySelector selected={difficulty} onSelect={handleDifficultySelect} />
 

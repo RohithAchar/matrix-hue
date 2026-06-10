@@ -1,22 +1,18 @@
-/*
- * Challenge.js — Mongoose schema for Play with Friends challenges
- *
- * Fields:
- *   shareCode:    String (unique, indexed, 6-char alphanumeric)
- *   hostSession:  String (sessionToken of host)
- *   difficulty:   Enum ["easy", "medium", "hard"]
- *   targets:      [{ h: Number, s: Number, l: Number }] (length 5)
- *   playerScores: Array of sub-documents:
- *                   sessionToken, displayName,
- *                   roundScores: [Number], totalScore: Number,
- *                   finishedAt: Date
- *   createdAt:    Date
- */
-
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const challengeSchema = new mongoose.Schema({
-  // TODO: define fields
+  shareCode: { type: String, unique: true, index: true },
+  hostSession: { type: String },
+  difficulty: { type: String, enum: ['easy', 'medium', 'hard'] },
+  targets: [{ h: Number, s: Number, l: Number }],
+  playerScores: [{
+    sessionToken: String,
+    displayName: String,
+    roundScores: [Number],
+    totalScore: Number,
+    finishedAt: { type: Date, default: Date.now },
+  }],
+  createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Challenge", challengeSchema);
+module.exports = mongoose.model('Challenge', challengeSchema);
