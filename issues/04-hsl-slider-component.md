@@ -113,13 +113,13 @@ background: linear-gradient(to top, hsl(200, 60%, 0%), hsl(200, 60%, 50%), hsl(2
 
 ## Acceptance Criteria
 
-- [ ] `HSLSlider` renders a vertical track with a draggable thumb.
-- [ ] Clicking on the track jumps the thumb to that position.
-- [ ] Dragging the thumb updates the value and fires `onChange`.
-- [ ] Numeric readout updates live.
-- [ ] `HSLSliderGroup` renders three sliders (H, S, L) with correct min/max/unit/trackColor.
-- [ ] `ColorPreviewSwatch` renders a square filled with the HSL color and updates in real time.
-- [ ] Test: simulate a drag on the Hue slider and verify the value changes.
+- [x] `HSLSlider` renders a vertical track with a draggable thumb.
+- [x] Clicking on the track jumps the thumb to that position.
+- [x] Dragging the thumb updates the value and fires `onChange`.
+- [x] Numeric readout updates live.
+- [x] `HSLSliderGroup` renders three sliders (H, S, L) with correct min/max/unit/trackColor.
+- [x] `ColorPreviewSwatch` renders a square filled with the HSL color and updates in real time.
+- [x] Test: simulate a drag on the Hue slider and verify the value changes.
 
 ---
 
