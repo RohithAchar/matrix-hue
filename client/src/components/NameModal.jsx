@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { useSession } from '../hooks/useSession';
+import { useSound } from '../hooks/useSound';
 
 export default function NameModal({ onSuccess }) {
   const { createSession } = useSession();
+  const { playClick } = useSound();
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -26,6 +28,7 @@ export default function NameModal({ onSuccess }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!name.trim() || submitting) return;
+    playClick();
     setSubmitting(true);
     setError(null);
     try {

@@ -6,6 +6,7 @@ import { generateTargets, randomHsl } from '../utils/colorGen';
 import { cieDe2000 } from '../utils/cieDe2000';
 import { scoreFromDelta } from '../utils/scoring';
 import { useTimer } from '../hooks/useTimer';
+import { useSound } from '../hooks/useSound';
 import ColorSwatch from '../components/ColorSwatch';
 import Timer from '../components/Timer';
 import HSLSliderGroup from '../components/HSLSliderGroup';
@@ -26,6 +27,7 @@ export default function Game() {
     startGame, setPhase, addRound, nextRound, finishGame, totalScore,
   } = useGame();
   const navigate = useNavigate();
+  const { playRoundStart, playTick, playFade, playScore, playClick } = useSound();
 
   const [targets, setTargets] = useState([]);
   const [target, setTarget] = useState(null);
@@ -37,6 +39,7 @@ export default function Game() {
   const fadeRef = useRef(null);
   const recreateRef = useRef(null);
   const labelRef = useRef(null);
+  const prevRemaining = useRef(0);
 
   const duration = DIFFICULTY_TIMES[difficulty] || 6;
 
@@ -62,16 +65,34 @@ export default function Game() {
   }, [round, targets, resetTimer, startTimer, setPhase]);
 
   useEffect(() => {
-    if (phase === 'fade' && fadeRef.current) {
-      gsap.fromTo(
-        fadeRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.5, ease: 'power2.out' }
-      );
+    if (phase === 'memorize') playRoundStart();
+  }, [phase, playRoundStart]);
+
+  useEffect(() => {
+    if (phase === 'memorize' && remaining > 0 && remaining <= 3 && remaining < prevRemaining.current) {
+      playTick();
+    }
+    prevRemaining.current = remaining;
+  }, [remaining, phase, playTick]);
+
+  useEffect(() => {
+    if (phase === 'fade') {
+      playFade();
+      if (fadeRef.current) {
+        gsap.fromTo(
+          fadeRef.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.5, ease: 'power2.out' }
+        );
+      }
       const timer = setTimeout(() => setPhase('recreate'), 1000);
       return () => clearTimeout(timer);
     }
-  }, [phase, setPhase]);
+  }, [phase, setPhase, playFade]);
+
+  useEffect(() => {
+    if (phase === 'reveal' && result) playScore(result.score);
+  }, [phase, result, playScore]);
 
   useEffect(() => {
     if (phase === 'recreate' && recreateRef.current) {
@@ -110,6 +131,7 @@ export default function Game() {
   }
 
   function handleSubmit() {
+    playClick();
     pauseTimer();
     const delta = cieDe2000(target.h, target.s, target.l, guess.h, guess.s, guess.l);
     const score = scoreFromDelta(delta);
@@ -120,6 +142,7 @@ export default function Game() {
   }
 
   function handleNextRound() {
+    playClick();
     if (round >= 4) {
       finishGame();
     } else {
@@ -206,7 +229,7 @@ export default function Game() {
                 </div>
               ))}
             </div>
-            <button className="game-btn" onClick={handlePlayAgain}>Play Again</button>
+            <button className="game-btn" onClick={() => { playClick(); handlePlayAgain(); }}>Play Again</button>
           </div>
         )}
       </div>

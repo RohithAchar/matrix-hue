@@ -5,6 +5,7 @@ import DifficultySelector from '../components/DifficultySelector';
 import NameModal from '../components/NameModal';
 import { useSession } from '../hooks/useSession';
 import { useGame } from '../context/GameContext';
+import { useSound } from '../hooks/useSound';
 
 const BG_COLORS = { easy: '#000000', medium: '#1a0a0a', hard: '#2a0505' };
 const MODE_CARDS = [
@@ -16,6 +17,7 @@ const MODE_CARDS = [
 export default function Home() {
   const { isLoggedIn, loading: sessionLoading } = useSession();
   const { difficulty, mode, selectDifficulty, selectMode } = useGame();
+  const { playClick } = useSound();
   const navigate = useNavigate();
   const bgRef = useRef(null);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -29,7 +31,13 @@ export default function Home() {
     });
   }, [difficulty]);
 
+  function handleDifficultySelect(d) {
+    playClick();
+    selectDifficulty(d);
+  }
+
   function handleModeClick(m) {
+    playClick();
     selectMode(m);
 
     if (difficulty === null) {
@@ -71,7 +79,7 @@ export default function Home() {
   return (
     <div className="home" ref={bgRef}>
       <div className="home-content">
-        <DifficultySelector selected={difficulty} onSelect={selectDifficulty} />
+        <DifficultySelector selected={difficulty} onSelect={handleDifficultySelect} />
 
         <div className="mode-cards">
           {MODE_CARDS.map((card) => (
